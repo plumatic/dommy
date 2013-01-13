@@ -14,7 +14,7 @@ Dommy is no-nonsene ClojureScript templating based on Clojure's [Hiccup](https:/
 	 [:span.text (str "word" r)])])
 => [object HTMLElement] 
 (.innerHTML *1)
-=> "<span class="text">word0</span><span class="text">word1</span>"
+=> "<span class=\"text\">word0</span><span class=\"text\">word1</span>"
 ```
 
 ## License
