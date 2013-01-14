@@ -1,4 +1,4 @@
-(ns dommy.template-test
+(ns dommy.template-perf-test
   (:require [dommy.template :as template]
             [crate.core :as crate]))
 
@@ -18,14 +18,16 @@
          [:span {:class "anchor"} (:name datum)]]]))
 
 (defn jquery-template [datum]
-  (-> "<a>" js/jQuery 
-      (.attr "href" (str "#show/" (:key datum)))
-      (.addClass "anchor")
-      (.append (-> "<div>" js/jQuery
-                   (.addClass "class1")
-                   (.addClass "class2")
-                   (.attr "id" (str "item" (:key datum)))
-                   (.append (-> "<span>" js/jQuery (.text (:name datum))))))))
+  (-> "<li>" js/jQuery 
+     (.append
+      (-> "<a>" js/jQuery 
+          (.attr "href" (str "#show/" (:key datum)))
+          (.addClass "anchor")
+          (.append (-> "<div>" js/jQuery
+                       (.addClass "class1")
+                       (.addClass "class2")
+                       (.attr "id" (str "item" (:key datum)))
+                       (.append (-> "<span>" js/jQuery (.text (:name datum))))))))))
 
 (defn run-test [root data li-fn]
   (let [now (js/Date.)]
@@ -58,9 +60,8 @@
 (defn ^:export perf-test []
   (let [data (doall (gen-data))]
     (.log js/console
-     (pr-str (->> (for [i (range 6)]
+     (pr-str (->> (for [i (range 3)]
                      (into {} (time-test data)))
-                  (drop 3)
                   (reduce (partial merge-with +))
                   (map (fn [[k v]] [k (/ v 3)]))
                   (into {}))))))

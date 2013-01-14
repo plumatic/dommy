@@ -35,4 +35,3 @@
   (.log js/console "PASS simple-test"))
 
 (simple-test)
-(.exit js/phantom 0)
