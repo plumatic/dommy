@@ -52,10 +52,12 @@
     node))
 
 (defn element? [data]
-  (or (keyword? data) (and (coll? data) (keyword? (first data)))))
+  (or (keyword? data)
+      (and (coll? data) (keyword? (first data)))
+      (instance? js/HTMLElement data)))
 
 (defn node? [data]
-  (or (element? data) (string? data) (number? data)))
+  (or (element? data) (string? data) (number? data) (instance? js/Text data)))
 
 (declare node)
 
@@ -74,13 +76,20 @@
     n))
 
 (defn element [data]
-  (cond
+  (cond   
    (keyword? data) (base-element data)
    (and (coll? data) (keyword? (first data))) (compound-element data)
+   (instance? js/HTMLElement data) data
    :else (throw (str "Don't know how to make element from " (pr-str data)))))
 
 (defn node [data]
   (cond 
       (element? data) (element data) 
       (or (number? data) (string? data)) (.createTextNode js/document (str data))
+      (instance? js/Text data) data
       :else (throw (str "Don't know how to make node from " (pr-str data)))))
+
+(defn html->nodes [html]
+  (let [parent (.createElement js/document "div")]
+    (.insertAdjacentHTML parent "beforeend" html)
+    (->> parent .-childNodes (.call js/Array.prototype.slice))))

@@ -32,6 +32,11 @@
              (-> [:div (for [x [1 2]] [:span {:id (str "id" x)} (str "span" x)])]
                  template/node
                  .-innerHTML)))
+  (let [e (first (template/html->nodes "<div><p>some-text</p></div>"))]
+    (assert (-> e .-tagName (= "DIV")))
+    (assert (-> e .-innerHTML (= "<p>some-text</p>")))
+    (assert (= e (template/element e))))
+
   (.log js/console "PASS simple-test"))
 
 (simple-test)
