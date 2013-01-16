@@ -9,12 +9,39 @@ Dommy is no-nonsene ClojureScript templating based on Clojure's [Hiccup](https:/
  (:require [dommy.template :as template]))
 
 (template/node
-  [:div#id.class1 
-	(for [r (range 2)] 
-	 [:span.text (str "word" r)])])
-=> [object HTMLElement] 
-(.innerHTML *1)
-=> "<span class=\"text\">word0</span><span class=\"text\">word1</span>"
+  [:div#id.class1
+    (for [r (range 2)] 
+      [:span.text (str "word" r)])])
+      
+=> [object HTMLElement]
+
+(.-outerHTML *1)
+
+=> "<div id=\"id\" class=\"class1\"><span class=\"text\">word0</span><span class=\"text\">word1</span></div>"
+```
+
+### Classes as a vec/sec
+
+```clojure
+(template/node [:div {:classes ["foo" "bar" "baz"]}])
+
+(.-outerHTML *1)
+
+=> "<div class=\"foo bar baz\"></div>"
+```
+
+### Inline style as a map
+
+```clojure
+(template/node
+  [:span
+    {:style
+      {:color "#aaa"
+       :text-decoration "line-through"}}])
+
+(.-outerHTML *1)
+
+=> "<span style=\"color:#aaa; text-decoration:line-through;\"></span>"
 ```
 
 ## License
