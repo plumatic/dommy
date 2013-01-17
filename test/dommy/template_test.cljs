@@ -36,7 +36,9 @@
     (assert (-> e .-tagName (= "DIV")))
     (assert (-> e .-innerHTML (= "<p>some-text</p>")))
     (assert (= e (template/element e))))
-
+  (let [e (template/base-element :#id1.class1)]
+    (assert (=  (.-outerHTML (template/base-element :div#id1.class1))
+                (.-outerHTML (template/base-element :#id1.class1)))))
   (.log js/console "PASS simple-test"))
 
 (simple-test)
