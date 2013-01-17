@@ -89,8 +89,11 @@
 	number
   (-elem [this] (.createTextNode js/document (str this)))
 
-	string
-  (-elem [this] (.createTextNode js/document (str this))))
+	js/String
+  (-elem [this]
+         (if (keyword? this)
+           (base-element this)
+           (.createTextNode js/document (str this)))))
 
 (defn node [data]
   (if (satisfies? element data)
