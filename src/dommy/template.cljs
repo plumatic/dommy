@@ -86,10 +86,10 @@
   js/Text
   (-elem [this] this)
 
-	number
+  number
   (-elem [this] (.createTextNode js/document (str this)))
 
-	js/String
+  js/String
   (-elem [this]
          (if (keyword? this)
            (base-element this)
