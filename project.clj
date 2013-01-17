@@ -22,5 +22,5 @@
              :compiler {:output-to "target/unit-test.js"
                         :optimizations :whitespace
                         :pretty-print true}}}
-     :test-commands {"unit" ["phantomjs" "target/unit-test.js"]}}
+     :test-commands {"unit" ["phantomjs" "target/unit-test.js" "resources/test.html"]}}
 )
