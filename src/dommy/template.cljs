@@ -34,13 +34,12 @@
 (defn base-element
   "dom element from css-style keyword like :a.class1 or :span#my-span.class"
   [node-key]
-  (let [initial-node-str (name node-key)
-        initial-tag (case (.charAt initial-node-str 0)
-                    (\# \.) "div"
-                    "")
-        node-str (str initial-tag initial-node-str)
+  (let [node-str (name node-key)
         base-idx (next-css-index node-str 0)
-        tag (if (> base-idx 0) (.substring node-str 0 base-idx) node-str)
+        tag (cond
+              (> base-idx 0) (.substring node-str 0 base-idx)
+              (zero? base-idx) "div"
+              :else node-str)
         node (.createElement js/document tag)]
     (when (>= base-idx 0)
       (loop [str (.substring node-str base-idx)]
