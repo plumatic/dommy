@@ -1,7 +1,7 @@
 (ns dommy.template
   (:require [clojure.string :as str]))
 
-(defprotocol element
+(defprotocol PElement
   (-elem [this] "return the element representation of this"))
 
 (defn add-class! [node c]
@@ -66,14 +66,14 @@
         attrs (when (map? (second data)) (second data))
         tail (drop (if attrs 2 1) data) 
         ;; Remove one level of nesting for cases like [:div [[:span][:span]]]
-        tail (mapcat (fn [group] (if (satisfies? element group) [group] group)) tail)]
+        tail (mapcat (fn [group] (if (satisfies? PElement group) [group] group)) tail)]
     (when attrs 
       (add-attrs! n attrs))
     (doseq [child tail]
       (.appendChild n (node child)))
     n))
 
-(extend-protocol element
+(extend-protocol PElement
   js/HTMLElement
   (-elem [this] this)
 
@@ -96,7 +96,7 @@
            (.createTextNode js/document (str this)))))
 
 (defn node [data]
-  (if (satisfies? element data)
+  (if (satisfies? PElement data)
     (-elem data)
     (throw (str "Don't know how to make node from " (pr-str data)))))
 
