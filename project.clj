@@ -6,8 +6,8 @@
   :scm {:url "git@github.com:prismatic/dommy.git"}
   :pom-addition [:developers [:developer
                               [:name "Prismatic"]
-                              [:url "http://prismatic.com"]
-                              [:email "admin+oss@prismatic.com"]
+                              [:url "http://getprismatic.com"]
+                              [:email "admin+oss@getprismatic.com"]
                               [:timezone "-8"]]]
   :plugins [[lein-cljsbuild "0.2.10"]]
   :dependencies [[crate "0.2.3" :scope "dev"]] ;; for perf test
