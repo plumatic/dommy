@@ -1,6 +1,9 @@
 (ns dommy.template
   (:require [clojure.string :as str]))
 
+(defprotocol element
+  (-elem [this] "return the element representation of this"))
+
 (defn add-class! [node c]
   (.setAttribute node "class" 
       (if-let [cur-c (.getAttribute node "class")]
@@ -54,14 +57,6 @@
             (recur (.substring str next-idx))))))
     node))
 
-(defn element? [data]
-  (or (keyword? data)
-      (and (coll? data) (keyword? (first data)))
-      (instance? js/HTMLElement data)))
-
-(defn node? [data]
-  (or (element? data) (string? data) (number? data) (instance? js/Text data)))
-
 (declare node)
 
 (defn compound-element
@@ -71,26 +66,36 @@
         attrs (when (map? (second data)) (second data))
         tail (drop (if attrs 2 1) data) 
         ;; Remove one level of nesting for cases like [:div [[:span][:span]]]
-        tail (mapcat (fn [group] (if (node? group) [group] group)) tail)]
+        tail (mapcat (fn [group] (if (satisfies? element group) [group] group)) tail)]
     (when attrs 
       (add-attrs! n attrs))
     (doseq [child tail]
       (.appendChild n (node child)))
     n))
 
-(defn element [data]
-  (cond   
-   (keyword? data) (base-element data)
-   (and (coll? data) (keyword? (first data))) (compound-element data)
-   (instance? js/HTMLElement data) data
-   :else (throw (str "Don't know how to make element from " (pr-str data)))))
+(extend-protocol element
+  js/HTMLElement
+  (-elem [this] this)
+
+  Keyword
+  (-elem [this] (base-element this))
+
+  PersistentVector
+  (-elem [this] (compound-element this))
+
+  js/Text
+  (-elem [this] this)
+
+	number
+  (-elem [this] (.createTextNode js/document (str this)))
+
+	string
+  (-elem [this] (.createTextNode js/document (str this))))
 
 (defn node [data]
-  (cond 
-      (element? data) (element data) 
-      (or (number? data) (string? data)) (.createTextNode js/document (str data))
-      (instance? js/Text data) data
-      :else (throw (str "Don't know how to make node from " (pr-str data)))))
+  (if (satisfies? element data)
+    (-elem data)
+    (throw (str "Don't know how to make node from " (pr-str data)))))
 
 (defn html->nodes [html]
   (let [parent (.createElement js/document "div")]
