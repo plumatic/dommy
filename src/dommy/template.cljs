@@ -5,13 +5,14 @@
   (-elem [this] "return the element representation of this"))
 
 (defn add-class! [node c]
-  (.setAttribute node "class" 
-      (if-let [cur-c (.getAttribute node "class")]
-        (str cur-c " " c)
-        c)))
+  (set! (.-className node)
+        (let [cur-c (.-className node)]
+          (if (identical? cur-c "")
+            c
+            (str cur-c " " c)))))
 
-(defn style-str [m]  
-  (->> m 
+(defn style-str [m]
+  (->> m
        (map (fn [[k v]] (str (name k) ":" (name v) ";")))
        (str/join " ")))
 
@@ -64,10 +65,10 @@
   [data]
   (let [n (base-element (first data))
         attrs (when (map? (second data)) (second data))
-        tail (drop (if attrs 2 1) data) 
+        tail (drop (if attrs 2 1) data)
         ;; Remove one level of nesting for cases like [:div [[:span][:span]]]
         tail (mapcat (fn [group] (if (satisfies? PElement group) [group] group)) tail)]
-    (when attrs 
+    (when attrs
       (add-attrs! n attrs))
     (doseq [child tail]
       (.appendChild n (node child)))

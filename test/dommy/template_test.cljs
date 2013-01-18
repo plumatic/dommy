@@ -13,17 +13,17 @@
     (assert (-> e .-tagName (= "A")))
     (assert (-> e .-textContent (= "anchor")))
     (assert (-> e (.getAttribute "href") (= "http://somelink")))
-    (assert (-> e (.getAttribute "class") (= "class1 class2"))))
+    (assert (-> e .-className (= "class1 class2"))))
   (let [e (template/base-element :div#id.class1.class2)]
     (assert (-> e .-tagName (= "DIV")))
     (assert (-> e (.getAttribute "id") (= "id")))
-    (assert (-> e (.getAttribute "class") (= "class1 class2"))))
+    (assert (-> e .-className (= "class1 class2"))))
   (let [e (template/compound-element [:div {:style {:margin-left "15px"}}])]
     (assert (-> e .-tagName (= "DIV")))
     (assert (-> e (.getAttribute "style") (= "margin-left:15px;"))))
   (let [e (template/compound-element [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])]
     (assert (-> e .-textContent (= "span1span2")))
-    (assert (-> e (.getAttribute "class") (= "class1")))
+    (assert (-> e .-className (= "class1")))
     (assert (-> e .-childNodes .-length (= 2)))
     (assert (-> e .-innerHTML (= "<span id=\"id1\">span1</span><span id=\"id2\">span2</span>")))
     (assert (-> e .-childNodes (aget 0) .-innerHTML (= "span1")))
