@@ -77,9 +77,6 @@
   js/HTMLElement
   (-elem [this] this)
 
-  Keyword
-  (-elem [this] (base-element this))
-
   PersistentVector
   (-elem [this] (compound-element this))
 
