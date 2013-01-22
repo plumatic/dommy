@@ -16,15 +16,14 @@
        (map (fn [[k v]] (str (name k) ":" (name v) ";")))
        (str/join " ")))
 
-(defn add-attrs!
+(defn add-attr! 
   "can have a seq for :classes key or a map for :style"
-  [node attrs]
-  (doseq [[k v] attrs]
-    (case k
+  [node k v]
+  (case k
       :class (add-class! node v)
       :classes (doseq [c v] (add-class! node c))
       :style (.setAttribute node (name k) (style-str v))
-      (.setAttribute node (name k) v))))
+      (.setAttribute node (name k) v)))
 
 (defn next-css-index [s start-idx]
   "index of css character (#,.) in base-element. bottleneck"
@@ -68,8 +67,8 @@
         tail (drop (if attrs 2 1) data)
         ;; Remove one level of nesting for cases like [:div [[:span][:span]]]
         tail (mapcat (fn [group] (if (satisfies? PElement group) [group] group)) tail)]
-    (when attrs
-      (add-attrs! n attrs))
+    (doseq [[k v] attrs]
+      (add-attr! n k v))
     (doseq [child tail]
       (.appendChild n (node child)))
     n))
