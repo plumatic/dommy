@@ -57,4 +57,14 @@
                   (.-outerHTML (template/base-element :#id1.class1))))))
   (.log js/console "PASS simple-test"))
 
+(defn ^:export boolean-test []
+  (let [e1 (template/node [:option {:selected true} "some text"])
+        e2 (template/node [:option {:selected false} "some text"])
+        e3 (template/node [:option {:selected nil} "some text"])]
+    (assert (-> e1 (.getAttribute "selected") (= "true")))
+    (assert (-> e2 (.getAttribute "selected") (nil?)))
+    (assert (-> e3 (.getAttribute "selected") (nil?)))
+    (.log js/console "PASS boolean-test")))
+
 (simple-test)
+(boolean-test)
