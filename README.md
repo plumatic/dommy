@@ -44,6 +44,20 @@ Dommy is no-nonsene ClojureScript templating based on Clojure's [Hiccup](https:/
 => "<span style=\"color:#aaa; text-decoration:line-through;\"></span>"
 ```
 
+
+### Extensible
+
+Thanks to [@ibdknox](https://github.com/ibdknox/) you can have custom view logic for your <code>deftype</code> or <code>defrecord</code> by implementing the <code>PElement</code> protocol:
+
+```clojure
+(defrecord MyModel [data]
+   dommy.template/PElement
+   (-elem [this] [:p (str "My data " data)]))
+
+(dommy.template/node (MyModel. "is big"))   
+=> "<p>My data is big</p>"
+```
+
 ## License
 
 Copyright (C) 2013 Prismatic
