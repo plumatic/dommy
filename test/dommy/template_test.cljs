@@ -1,33 +1,47 @@
 (ns dommy.template-test
-  (:require [dommy.template :as template]))
+  (:require [dommy.template :as template])
+  (:require-macros [dommy.template-compile :as template-compile]))
+
 
 (defn ^:export simple-test []
   (assert (-> :b template/node .-tagName (= "B")))
   (assert (-> "some text" template/node .-textContent (= "some text")))
-  (let [e (template/node [:span "some text"])]
-    (assert (-> e .-tagName (= "SPAN")))
-    (assert (-> e .-textContent (= "some text")))
-    (assert (-> e .-childNodes (aget 0) .-nodeType (= js/document.TEXT_NODE)))
-    (assert (-> e .-children .-length zero?)))
-  (let [e (template/node [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])]
-    (assert (-> e .-tagName (= "A")))
-    (assert (-> e .-textContent (= "anchor")))
-    (assert (-> e (.getAttribute "href") (= "http://somelink")))
-    (assert (-> e .-className (= "class1 class2"))))
-  (let [e (template/base-element :div#id.class1.class2)]
-    (assert (-> e .-tagName (= "DIV")))
-    (assert (-> e (.getAttribute "id") (= "id")))
-    (assert (-> e .-className (= "class1 class2"))))
-  (let [e (template/compound-element [:div {:style {:margin-left "15px"}}])]
-    (assert (-> e .-tagName (= "DIV")))
-    (assert (-> e (.getAttribute "style") (= "margin-left:15px;"))))
-  (let [e (template/compound-element [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])]
-    (assert (-> e .-textContent (= "span1span2")))
-    (assert (-> e .-className (= "class1")))
-    (assert (-> e .-childNodes .-length (= 2)))
-    (assert (-> e .-innerHTML (= "<span id=\"id1\">span1</span><span id=\"id2\">span2</span>")))
-    (assert (-> e .-childNodes (aget 0) .-innerHTML (= "span1")))
-    (assert (-> e .-childNodes (aget 1) .-innerHTML (= "span2"))))
+  ;; unfortunately to satisfy the macro gods, you need to
+  ;; duplicate the vector literal to test compiled and runtime template
+  (let [e1 (template/node [:span "some text"])
+        e2 (template-compile/node [:span "some text"])]
+    (doseq [e [e1 e2]]
+      (assert (-> e .-tagName (= "SPAN")))
+      (assert (-> e .-textContent (= "some text")))
+      (assert (-> e .-childNodes (aget 0) .-nodeType (= js/document.TEXT_NODE)))
+      (assert (-> e .-children .-length zero?))))
+  (let [e1 (template/node [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])
+        e2 (template-compile/node
+              [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])]
+    (doseq [e [e1 e2]] (assert (-> e .-tagName (= "A")))
+           (assert (-> e .-textContent (= "anchor")))
+           (assert (-> e (.getAttribute "href") (= "http://somelink")))
+           (assert (-> e .-className (= "class1 class2")))))
+  (let [e1 (template/base-element :div#id.class1.class2)
+        e2 (template-compile/node :div#id.class1.class2)]
+    (doseq [e [e1 e2]]
+      (assert (-> e .-tagName (= "DIV")))
+      (assert (-> e (.getAttribute "id") (= "id")))
+      (assert (-> e .-className (= "class1 class2")))))
+  (let [e1 (template/compound-element [:div {:style {:margin-left "15px"}}])
+        e2 (template-compile/node [:div {:style {:margin-left "15px"}}])]
+    (doseq [e [e1 e2]]
+      (assert (-> e .-tagName (= "DIV")))
+      (assert (-> e (.getAttribute "style") (= "margin-left:15px;")))))
+  (let [e1 (template/compound-element [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])
+        e2 (template-compile/node [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])]
+    (doseq [e [e1 e2]]
+      (assert (-> e .-textContent (= "span1span2")))
+      (assert (-> e .-className (= "class1")))
+      (assert (-> e .-childNodes .-length (= 2)))
+      (assert (-> e .-innerHTML (= "<span id=\"id1\">span1</span><span id=\"id2\">span2</span>")))
+      (assert (-> e .-childNodes (aget 0) .-innerHTML (= "span1")))
+      (assert (-> e .-childNodes (aget 1) .-innerHTML (= "span2")))))
   (assert (= "<span id=\"id1\">span1</span><span id=\"id2\">span2</span>"
              (-> [:div (for [x [1 2]] [:span {:id (str "id" x)} (str "span" x)])]
                  template/node
@@ -36,9 +50,11 @@
     (assert (-> e .-tagName (= "DIV")))
     (assert (-> e .-innerHTML (= "<p>some-text</p>")))
     (assert (= e (template/node e))))
-  (let [e (template/base-element :#id1.class1)]
-    (assert (=  (.-outerHTML (template/base-element :div#id1.class1))
-                (.-outerHTML (template/base-element :#id1.class1)))))
+  (let [e1 (template/base-element :#id1.class1)
+        e2 (template-compile/node :#id1.class1)]
+    (doseq [e [e1 e2]]      
+      (assert (=  (.-outerHTML (template/base-element :div#id1.class1))
+                  (.-outerHTML (template/base-element :#id1.class1))))))
   (.log js/console "PASS simple-test"))
 
 (simple-test)
