@@ -7,11 +7,12 @@
   "compile-time add attribute"
   [d k v]  
   (assert (keyword? k))  
-  (cond
-     (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
-     (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.template/style-str ~v))
-     (identical? k :classes) `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
-     :else `(.setAttribute ~d ~(name k) ~v)))
+  `(when ~v
+     ~(cond
+       (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
+       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.template/style-str ~v))
+       (identical? k :classes) `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
+       :else `(.setAttribute ~d ~(name k) ~v))))
 
 (defn parse-keyword 
   "return pair [tag class-str id] where tag is dom tag and attrs

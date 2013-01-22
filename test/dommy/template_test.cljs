@@ -59,11 +59,14 @@
 
 (defn ^:export boolean-test []
   (let [e1 (template/node [:option {:selected true} "some text"])
+        e1c (template-compile/node [:option {:selected true} "some text"]) 
         e2 (template/node [:option {:selected false} "some text"])
-        e3 (template/node [:option {:selected nil} "some text"])]
-    (assert (-> e1 (.getAttribute "selected") (= "true")))
-    (assert (-> e2 (.getAttribute "selected") (nil?)))
-    (assert (-> e3 (.getAttribute "selected") (nil?)))
+        e2c (template-compile/node [:option {:selected false} "some text"])
+        e3 (template/node [:option {:selected nil} "some text"])
+        e3c (template-compile/node [:option {:selected nil} "some text"])]
+    (doseq [e [e1 e1c]] (assert (-> e (.getAttribute "selected") (= "true"))))
+    (doseq [e [e2 e2c]] (assert (-> e (.getAttribute "selected") (nil?))))
+    (doseq [e [e3 e3c]] (assert (-> e (.getAttribute "selected") (nil?))))
     (.log js/console "PASS boolean-test")))
 
 (simple-test)
