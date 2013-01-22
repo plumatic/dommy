@@ -19,11 +19,12 @@
 (defn add-attr! 
   "can have a seq for :classes key or a map for :style"
   [node k v]
-  (case k
+  (when v 
+    (case k
       :class (add-class! node v)
       :classes (doseq [c v] (add-class! node c))
       :style (.setAttribute node (name k) (style-str v))
-      (when v (.setAttribute node (name k) v)))) ;omit if logically false
+      (.setAttribute node (name k) v)))) 
 
 (defn next-css-index [s start-idx]
   "index of css character (#,.) in base-element. bottleneck"
