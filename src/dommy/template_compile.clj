@@ -55,8 +55,12 @@
   (cond 
     (vector? data) `(compile-compound ~data)
     (keyword? data) `(compile-compound [~data])
-    (string? data) `(.createTextNode js/document ~data)
+    (or (string? data) (:text (meta data))) `(.createTextNode js/document ~data)
     :else `(dommy.template/-elem ~data)))
+
+(defmacro deftemplate [name args node-form]
+  `(defn ~name ~args
+     (node ~node-form)))
 
 (comment
    

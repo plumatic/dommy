@@ -70,8 +70,17 @@ There is a also a macro DOM building function which can be significantly faster 
 	  [:span.text word]]))
 ```
 
-The <code>dommy.template-compile/node</code> will compile this template data into **much** more efficient
-JavaScript
+Alternatively, you can use the <code>deftemplate</code> macro:
+
+
+```clojure
+
+(deftemplate simple-template [word]
+  [:div#id.class1
+	  [:span.text word]])
+```
+
+These macros will compile this template data into **much** more efficient JavaScript
 
 ```javascript
 function simple_template(word) {
@@ -92,6 +101,8 @@ function simple_template(word) {
 The <code>node</code> macro will 'compile' the structure to efficient JavaScript recursively as
 long as data is expressed as literals. 
 
+### Type-Hinting Template Macros
+
 One caveat of using the compile-macro is that if you have a compound element (a vector element) and want to have a non-literal map as the attributes (the second element of the vector), then you need to use <code>^:attrs</code> meta-data so the compiler knows to process this symbol as a map of attributes in the runtime system. Here's an example
 
 
@@ -100,8 +111,38 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 ```
 
 Again this is **not** necessary when the attribute map is a literal (that map can even contain symbolic keys or values).
-  
 
+You can also type-hint a symbol as <code>^:text</code> which will enusre the macro appens
+the symbol as a text node and doesn't use the runtime templating. 
+
+For instance, this template
+
+```clojure
+
+(deftemplate simple-template [[href anchor]]
+    [:a.anchor {:href href} ^:text anchor])
+
+```
+
+Will generate the following Javascript:
+
+
+```javascript
+function simple_template(p__13888) {
+    var vec__13891 = p__13888;
+    var href = cljs.core.nth.call(null, vec__13891, 0, null);
+    var anchor = cljs.core.nth.call(null, vec__13891, 1, null);
+    var dom13892 = document.createElement("a");
+    dom13892.className = "anchor";
+    if(cljs.core.truth_(href)) {
+        dom13892.setAttribute("href", href)
+    }else {
+    }
+    dom13892.appendChild(document.createTextNode(anchor));
+    return dom13892
+}
+```
+  
 ## License
 
 Copyright (C) 2013 Prismatic

@@ -1,6 +1,7 @@
 (ns dommy.template-test
   (:require [dommy.template :as template])
-  (:require-macros [dommy.template-compile :as template-compile]))
+  (:require-macros [dommy.template-compile :as template-compile])
+  (:use-macros [dommy.template-compile :only [deftemplate]]))
 
 
 (defn ^:export simple-test []
@@ -69,5 +70,15 @@
     (doseq [e [e3 e3c]] (assert (-> e (.getAttribute "selected") (nil?))))
     (.log js/console "PASS boolean-test")))
 
+
+(deftemplate simple-template [[href anchor]]
+    [:a.anchor {:href href} ^:text anchor])
+
+(defn ^:export deftemplate-test []
+  (assert (= "<a class=\"anchor\" href=\"http://somelink.html\">some-text</a>"
+         (.-outerHTML (simple-template ["http://somelink.html" "some-text"]))))
+  (.log js/console "PASS deftemplate-test"))
+
 (simple-test)
 (boolean-test)
+(deftemplate-test)
