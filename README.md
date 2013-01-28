@@ -1,6 +1,6 @@
 # dommy
 
-Dommy is no-nonsense ClojureScript templating based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test <code>dommy.template-perf-test</code>). It also has a compile-time macro component that is significantly (5x) faster, but requires most of you DOM structure to be expressed as nested vector literals (see 'Compile Macros' below).
+Dommy is no-nonsense ClojureScript templating based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test <code>dommy.template-perf-test</code>). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below).
 
 ## Templating Usage
 
