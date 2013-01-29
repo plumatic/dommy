@@ -104,12 +104,24 @@
        (add-class! node class)
        (remove-class! node class))))
 
-(defn listen!
+(defn live-listener [node selector f]
+  (fn [event]
+    ;; does event.target match selector 
+    (when (-> (sel node live-selector) (#(apply array %)) (.indexOf (.-target event)) (>= 0))
+      (f event))))
+
+;; (defprotocol PEventListener
+;;   (listener-id [this] "id for the listener"))
+
+;; (defn named-listener [key f]
+;;   (reify
+;;     PEventListener
+;;     (listener-id [this] key)
+;;     IFn
+;;     (invoke [& args] (apply f args))))
+
+(defn add-listen!
   ([node event-type live-selector f]
-     (listen! node event-type
-        (fn [event]
-          ;; does event.target match selector 
-          (when (-> (sel node live-selector) (#(apply array %)) (.indexOf (.-target event)) (>= 0))
-            (f event)))))
+     (listen! node event-type (live-listener node live-selector f)))
   ([node event-type f]
      (.addEventListener node (name event-type) f)))
