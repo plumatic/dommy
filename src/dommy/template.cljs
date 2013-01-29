@@ -1,15 +1,9 @@
 (ns dommy.template
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [dommy.core :as dommy]))
 
 (defprotocol PElement
   (-elem [this] "return the element representation of this"))
-
-(defn add-class! [node c]
-  (set! (.-className node)
-        (let [cur-c (.-className node)]
-          (if (identical? cur-c "")
-            c
-            (str cur-c " " c)))))
 
 (defn style-str [m]
   (->> m
@@ -21,8 +15,8 @@
   [node k v]
   (when v 
     (case k
-      :class (add-class! node v)
-      :classes (doseq [c v] (add-class! node c))
+      :class (dommy/add-class! node v)
+      :classes (doseq [c v] (dommy/add-class! node c))
       :style (.setAttribute node (name k) (style-str v))
       (.setAttribute node (name k) v)))) 
 
@@ -52,7 +46,7 @@
                      (.substring str 0 next-idx)
                      str)]
           (case (.charAt frag 0)
-            \. (add-class! node (.substring frag 1))
+            \. (dommy/add-class! node (.substring frag 1))
             \# (.setAttribute node "id" (.substring frag 1)))
           (when (>= next-idx 0)
             (recur (.substring str next-idx))))))

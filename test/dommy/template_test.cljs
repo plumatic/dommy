@@ -56,7 +56,7 @@
     (doseq [e [e1 e2]]      
       (assert (=  (.-outerHTML (template/base-element :div#id1.class1))
                   (.-outerHTML (template/base-element :#id1.class1))))))
-  (.log js/console "PASS simple-test"))
+  (.log js/console "PASS template-test/simple-test"))
 
 (defn ^:export boolean-test []
   (let [e1 (template/node [:option {:selected true} "some text"])
@@ -68,7 +68,7 @@
     (doseq [e [e1 e1c]] (assert (-> e (.getAttribute "selected") (= "true"))))
     (doseq [e [e2 e2c]] (assert (-> e (.getAttribute "selected") (nil?))))
     (doseq [e [e3 e3c]] (assert (-> e (.getAttribute "selected") (nil?))))
-    (.log js/console "PASS boolean-test")))
+    (.log js/console "PASS template-test/boolean-test")))
 
 
 (deftemplate simple-template [[href anchor]]
