@@ -1,8 +1,9 @@
 # dommy
 
-Dommy is no-nonsense ClojureScript templating based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test <code>dommy.template-perf-test</code>). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below).
+Dommy is no-nonsense ClojureScript DOM templating and manipulation library. Templating is based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test `dommy.template-perf-test`). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below). DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is also significantly faster for common tasks like toggling classes.
 
-## Templating Usage
+
+## Templating 
 
 ```clojure
 (ns awesome-webapp
@@ -142,6 +143,27 @@ function simple_template(p__13888) {
     return dom13892
 }
 ```
+
+## Dom Manipulation
+
+Dommy also has DOM manipulation similar to jQuery, which can be threaded using the `->` operator
+to simulate jQuery-style chaining.
+
+```clojure
+
+(= (-> (dommy-template/node [:div#root.container])
+       (dommy/append! (-> (dommy-template/node [:span "Some Text"])
+	                      (dommy/add-class! "child-class"))
+	   (dommy/toggle-class! "container")
+       .-outerHTML)
+  "<div id=\"id\"><span class=\"child-class\">Some Text</span></div>")
+  
+;; Also equivalent to the simpler template
+(dommy-template/node [:div#root [:span.child-class "Some Text"]])  
+```
+
+According to a simple benchmark, dommy performs 80% faster than jQuery on a simple `toggleClass`, `hasClass` benchmark. 
+
   
 ## License
 
