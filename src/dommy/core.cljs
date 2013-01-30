@@ -107,7 +107,7 @@
 (defn live-listener [node selector f]
   (fn [event]
     ;; does event.target match selector 
-    (when (-> (sel node live-selector) (#(apply array %)) (.indexOf (.-target event)) (>= 0))
+    (when (-> (sel node selector) (#(apply array %)) (.indexOf (.-target event)) (>= 0))
       (f event))))
 
 ;; (defprotocol PEventListener
@@ -120,7 +120,7 @@
 ;;     IFn
 ;;     (invoke [& args] (apply f args))))
 
-(defn add-listen!
+(defn listen!
   ([node event-type live-selector f]
      (listen! node event-type (live-listener node live-selector f)))
   ([node event-type f]
