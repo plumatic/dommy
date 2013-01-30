@@ -164,6 +164,8 @@ to simulate jQuery-style chaining.
 
 According to a simple benchmark, dommy performs 80% faster than jQuery on a simple `toggleClass`, `hasClass` benchmark. 
 
+### Event Listeners
+
   
 ## License
 
