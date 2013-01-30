@@ -92,9 +92,9 @@
 
 (defn toggle-class!
   "(toggle-class! node class) will add-class! if node does not have class and remove-class! otherwise.
-   (toggle-class! node class add?) will add-class! if add? is truthy, otherwise it will remove-class!")
+   (toggle-class! node class add?) will add-class! if add? is truthy, otherwise it will remove-class!"
   ([node class]
-     (toggle-class! node class (not (has-class? node class)))
+     (toggle-class! node class (not (has-class? node class))))
   ([node class add?]
      (if add?
        (add-class! node class)
