@@ -86,27 +86,24 @@
   "remove class from node"
   [node class]
   (let [class-name (.-className node)
-        new-class-name (remove-class-str class-name class)]
+        new-class-name (remove-class-str class-name (name class))]
     (when-not (identical? class-name new-class-name)
       (set! (.-className node) new-class-name))))
 
 (defn toggle-class!
   "(toggle-class! node class) will add-class! if node does not have class and remove-class! otherwise.
-   
-   (toggle-class! node class pred) will add-class! if pred is a function and (pred node class) returns truthy, or
-   pred is truthy. Otherwise, it will remove-class!"
+   (toggle-class! node class add?) will add-class! if add? is truthy, otherwise it will remove-class!"
   ([node class]
-     (if (has-class? node class)
-       (remove-class! node class)
-       (add-class! node class)))
-  ([node class pred]
-     (if (if (fn? pred) (pred class node) pred)
+     (toggle-class! node class (not (has-class? node class))))
+  ([node class add?]
+     (if add?
        (add-class! node class)
        (remove-class! node class))))
 
-(defn live-listener [node selector f]
+(defn live-listener
+  "fires f if event.target is found within the specified selector"
+  [node selector f]
   (fn [event]
-    ;; does event.target match selector 
     (when (-> (sel node selector) (#(apply array %)) (.indexOf (.-target event)) (>= 0))
       (f event))))
 

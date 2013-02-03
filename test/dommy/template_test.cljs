@@ -34,6 +34,8 @@
     (doseq [e [e1 e2]]
       (assert (-> e .-tagName (= "DIV")))
       (assert (-> e (.getAttribute "style") (= "margin-left:15px;")))))
+  (let [e (template/compound-element [:div (interpose [:br] (repeat 3 "test"))])]
+    (assert (-> e .-outerHTML (= "<div>test<br>test<br>test</div>"))))
   (let [e1 (template/compound-element [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])
         e2 (template-compile/node [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])]
     (doseq [e [e1 e2]]
