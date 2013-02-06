@@ -2,6 +2,14 @@
 
 Dommy is no-nonsense ClojureScript templating based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test <code>dommy.template-perf-test</code>). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below).
 
+## Installation
+
+Add the following dependency on your project.clj:
+
+```clojure
+[prismatic/dommy "0.0.1"]
+```
+
 ## Templating Usage
 
 ```clojure
@@ -10,9 +18,9 @@ Dommy is no-nonsense ClojureScript templating based on Clojure's [Hiccup](https:
 
 (template/node
   [:div#id.class1
-    (for [r (range 2)] 
+    (for [r (range 2)]
       [:span.text (str "word" r)])])
-      
+
 => [object HTMLElement]
 
 (.-outerHTML *1)
@@ -54,7 +62,7 @@ Thanks to [@ibdknox](https://github.com/ibdknox/) you can have custom view logic
    dommy.template/PElement
    (-elem [this] [:p (str "My data " data)]))
 
-(dommy.template/node (MyModel. "is big"))   
+(dommy.template/node (MyModel. "is big"))
 => "<p>My data is big</p>"
 ```
 
@@ -95,11 +103,11 @@ function simple_template(word) {
   }());
   return dom56633
 }
-  
+
 ```
 
 The <code>node</code> macro will 'compile' the structure to efficient JavaScript recursively as
-long as data is expressed as literals. 
+long as data is expressed as literals.
 
 ### Type-Hinting Template Macros
 
@@ -113,7 +121,7 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 Again this is **not** necessary when the attribute map is a literal (that map can even contain symbolic keys or values).
 
 You can also type-hint a symbol as <code>^:text</code> which will enusre the macro appens
-the symbol as a text node and doesn't use the runtime templating. 
+the symbol as a text node and doesn't use the runtime templating.
 
 For instance, this template
 
@@ -142,7 +150,7 @@ function simple_template(p__13888) {
     return dom13892
 }
 ```
-  
+
 ## License
 
 Copyright (C) 2013 Prismatic
