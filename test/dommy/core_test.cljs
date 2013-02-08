@@ -29,6 +29,14 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
+(deftest listener
+  (let [el-simple (node [:div#id])
+        click-cnt (atom 0)]
+    (dommy/listen! el-simple :click (fn [] (swap! click-cnt inc)))
+    (is= 0 @click-cnt)
+    (-> js/document (.getElementById "id") (.click))
+    (is= 1 @click-cnt)))
+
 ;; Performance test to run in browser
 
 (defn class-perf-test [node]
