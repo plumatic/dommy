@@ -107,10 +107,11 @@
        (add-class! node class)
        (remove-class! node class))))
 
-(defn- selector [data]
+(defn selector [data]
   (cond
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
+
 
 (defn live-listener
   "fires f if event.target is found within the specified selector"

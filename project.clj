@@ -9,18 +9,18 @@
                               [:url "http://getprismatic.com"]
                               [:email "admin+oss@getprismatic.com"]
                               [:timezone "-8"]]]
-  :plugins [[lein-cljsbuild "0.2.10"]]
-  :internal-dependencies [cljs-test]
+  :plugins [[lein-cljsbuild "0.3.0"]]
   :clojurescript? true
-  :dependencies [[crate "0.2.3" :scope "dev"]] ;; for perf test
+  :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
+                 [prismatic/cljs-test "0.0.2"]] 
   :hooks [leiningen.cljsbuild]
   :cljsbuild 
     {:builds 
-     {:dev  {:source-path "src"
+     {:dev  {:source-paths ["src"]
              :compiler {:output-to "target/main.js"
                         :optimizations :whitespace
                         :pretty-print true}}
-      :test {:source-path "test"
+      :test {:source-paths ["test"]
              :compiler {:output-to "target/unit-test.js"
                         :optimizations :whitespace
                         :pretty-print true}}}

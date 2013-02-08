@@ -1,6 +1,8 @@
 # dommy
 
-Dommy is no-nonsense ClojureScript DOM templating and manipulation library. Templating is based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test `dommy.template-perf-test`). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below). DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is also significantly faster for common tasks like toggling classes.
+Dommy is no-nonsense ClojureScript DOM templating and manipulation library. Templating is based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test `dommy.template-perf-test`). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below). 
+
+DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is also significantly faster (roughly 2x) for common tasks like toggling classes (see this [performance test](https://github.com/Prismatic/dommy/tree/master/test/dommycore_test.clj)).
 
 
 ## Templating 
@@ -162,9 +164,14 @@ to simulate jQuery-style chaining.
 (dommy-template/node [:div#root [:span.child-class "Some Text"]])  
 ```
 
-According to a simple benchmark, dommy performs 80% faster than jQuery on a simple `toggleClass`, `hasClass` benchmark. 
+According to a simple benchmark, dommy performs twice as fast compared to jQuery on a simple `toggleClass`, `hasClass` benchmark. 
 
 ### Event Listeners
+
+```clojure
+	
+
+```
 
   
 ## License

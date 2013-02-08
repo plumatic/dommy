@@ -2,8 +2,7 @@
   (:use-macros [dommy.core-compile :only [sel sel1]]
                [dommy.template-compile :only [node]]
                [cljs-test.core :only [is is= deftest]])
-  (:require [dommy.core :as dommy]
-            [goog.testing.jsunit]))
+  (:require [dommy.core :as dommy]))
 
 (def body js/document.body)
 
@@ -30,6 +29,8 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
+;; Performance test to run in browser
+
 (defn class-perf-test [node]
   (let [start (.now js/Date)]        
     (dotimes [i 1e6]
@@ -47,5 +48,5 @@
 
 (defn ^:export class-perf []
   (let [node (node [:div.class1.class2.class3.class4.class5])]
-    (.log js/console (pr-str { :dommy  (class-perf-test node)
+    (.log js/console (pr-str {:dommy  (class-perf-test node)
                               :jquery (jquery-perf-test node)}))))
