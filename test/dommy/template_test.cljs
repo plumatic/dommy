@@ -56,6 +56,39 @@
     (doseq [e [e1 e2]]      
       (assert (=  (.-outerHTML (template/base-element :div#id1.class1))
                   (.-outerHTML (template/base-element :#id1.class1))))))
+  
+  ;; test html for example list form
+  ;; note: if practice you can write the direct form (without the list) you should.
+  (let [spans (for [i (range 2)] [:span (str "span" i)])
+        end [:span.end "end"]
+        h   [:div#id1.class1 (list spans end)]
+        e1 (template/compound-element h)
+        e2 (template/node             h)]
+    (doseq [e [e1 e2]]
+      (assert (-> e .-textContent (= "span0span1end")))
+      (assert (-> e .-className (= "class1")))
+      (assert (-> e .-childNodes .-length (= 3)))
+      (assert (-> e .-innerHTML 
+                (= "<span>span0</span><span>span1</span><span class=\"end\">end</span>")))
+      (assert (-> e .-childNodes (aget 0) .-innerHTML (= "span0")))
+      (assert (-> e .-childNodes (aget 1) .-innerHTML (= "span1")))
+      (assert (-> e .-childNodes (aget 2) .-innerHTML (= "end")))))
+  
+  ;; test equivalence of "direct inline" and list forms
+  (let [spans (for [i (range 2)] [:span (str "span" i)])
+        end   [:span.end "end"]
+        h1    [:div.class1 (list spans end)]
+        h2    [:div.class1 spans end]
+        e11 (template/compound-element h1)
+        e12 (template/node             h1)
+        e21 (template/compound-element h2)
+        e22 (template/node             h2)]
+    (doseq [[e1 e2] [[e11 e12]
+                     [e12 e21]
+                     [e21 e22]
+                     [e22 e11]]]
+      (assert (= (.-innerHTML e1) (.-innerHTML e2)))))
+  
   (.log js/console "PASS simple-test"))
 
 (defn ^:export boolean-test []

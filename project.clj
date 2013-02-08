@@ -10,7 +10,8 @@
                               [:email "admin+oss@getprismatic.com"]
                               [:timezone "-8"]]]
   :plugins [[lein-cljsbuild "0.2.10"]]
-  :dependencies [[org.clojure/clojure "1.4.0"][crate "0.2.3" :scope "dev"]] ;; for perf test
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [crate "0.2.3" :scope "dev"]] ;; for perf test
   :hooks [leiningen.cljsbuild]
   :cljsbuild 
     {:builds 
