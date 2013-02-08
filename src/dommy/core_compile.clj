@@ -24,6 +24,7 @@
 
 (defmacro sel 
   ([base data]
-     `(.querySelectorAll ~base ~(selector-form data)))
+     `(.call (-> js/Array .-prototype .-slice)
+       (.querySelectorAll ~base ~(selector-form data))))
   ([data]
      `(sel js/document ~data)))

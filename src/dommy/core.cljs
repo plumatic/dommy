@@ -28,7 +28,6 @@
   (.replaceChild (.-parentNode node) new node)
   new)
 
-
 (defn- class-match?
   "does class-name string have class starting at index idx. 
    only will be used when node.classList doesn't exist"
@@ -112,12 +111,13 @@
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
 
-
 (defn live-listener
   "fires f if event.target is found within the specified selector"
   [node selector f]
   (fn [event]
-    (when (-> (sel node selector) (#(apply array %)) (.indexOf (.-target event)) (>= 0))
+    (when (-> (sel node selector)
+              (.indexOf (.-target event))
+              (>= 0))
       (f event))))
 
 (defn listen!

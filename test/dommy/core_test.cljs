@@ -29,12 +29,29 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
-(deftest listener
+(defn click!
+  "Simulates a click event on node"
+  [node]
+  (let [event (.createEvent js/document "MouseEvents")]
+    (.initMouseEvent event "click" true true)
+    (.dispatchEvent node event)))
+
+(deftest listener-simple
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
-    (dommy/listen! el-simple :click (fn [] (swap! click-cnt inc)))
+    (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
     (is= 0 @click-cnt)
-    (-> js/document (.getElementById "id") (.click))
+    (click! el-simple)
+    (is= 1 @click-cnt)))
+
+(deftest listener-live
+  (let [el-nested (node [:ul])
+        target (node [:li])
+        click-cnt (atom 0)
+        listener (dommy/live-listener el-nested :li (fn [e] (swap! click-cnt inc) true))]
+    (is= 0 @click-cnt)
+    (dommy/append! el-nested target)
+    (listener (js-obj "target" target))
     (is= 1 @click-cnt)))
 
 ;; Performance test to run in browser
