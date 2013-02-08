@@ -58,7 +58,7 @@
                   (.-outerHTML (template/base-element :#id1.class1))))))
   
   ;; test html for example list form
-  ;; note: if practice you can write the direct form (without the list) you should.
+  ;; note: in practice you can write the direct form (without the list) you should.
   (let [spans (for [i (range 2)] [:span (str "span" i)])
         end [:span.end "end"]
         h   [:div#id1.class1 (list spans end)]
