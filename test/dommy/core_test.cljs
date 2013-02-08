@@ -1,38 +1,34 @@
 (ns dommy.core-test
   (:use-macros [dommy.core-compile :only [sel sel1]]
-               [dommy.template-compile :only [node]])
-  (:require [dommy.core :as dommy]))
+               [dommy.template-compile :only [node]]
+               [cljs-test.core :only [is is= deftest]])
+  (:require [dommy.core :as dommy]
+            [goog.testing.jsunit]))
 
 (def body js/document.body)
 
-(defn sel-test []
+(deftest basic-selection
   ;; Simple
   (dommy/append! body (node [:div#foo]))
-  (assert (.-tagName (sel1 :#foo)) "DIV")
+  (is= (.-tagName (sel1 :#foo)) "DIV")
   ;; Evaluated
   (let [bar :#bar
         bar-el (node bar)]
     (dommy/append! body bar-el)
-    (assert (identical? (sel1 bar) bar-el)))
-  ;; Nested
-  
-  (.log js/console "PASS core-test/simple-test"))
+    (is= (sel1 bar) bar-el)))
 
-(defn class-test []
+(deftest simple-class
   (let [el-simple (node [:div.foo])
         el-complex (node [:div.c1.c.c3.c.c4.d?])]
-    (assert (dommy/has-class? el-simple "foo"))
-    (assert (dommy/has-class? el-complex "c"))
-    (assert (not (dommy/has-class? el-complex "c5")))
+    (is (dommy/has-class? el-simple "foo"))
+    (is (dommy/has-class? el-complex "c"))
+    (is (not (dommy/has-class? el-complex "c5")))
     (dommy/add-class! el-simple "test")
-    (assert (dommy/has-class? el-simple "test"))
+    (is (dommy/has-class? el-simple "test"))
     (dommy/remove-class! el-simple "test")
-    (assert (not (dommy/has-class? el-simple "test")))
+    (is (not (dommy/has-class? el-simple "test")))
     (dommy/toggle-class! el-simple "test")
-    (js/console.log (.-className el-simple))
-    (js/console.log (dommy/has-class? el-simple "test"))
-    (assert (dommy/has-class? el-simple "test")))
-  (.log js/console "PASS core-test/class-test"))
+    (is (dommy/has-class? el-simple "test"))))
 
 (defn class-perf-test [node]
   (let [start (.now js/Date)]        
@@ -53,6 +49,3 @@
   (let [node (node [:div.class1.class2.class3.class4.class5])]
     (.log js/console (pr-str { :dommy  (class-perf-test node)
                               :jquery (jquery-perf-test node)}))))
- 
-(sel-test)
-(class-test)
