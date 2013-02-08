@@ -59,7 +59,6 @@
     node))
 
 (declare node)
-(declare unchecked-node)
 
 (defn throw-unable-to-make-node [node-data]
   (throw (str "Don't know how to make node from: " (pr-str node-data))))
@@ -67,15 +66,13 @@
 (defn append-children [n children]
   (cond 
     (satisfies? PElement children) 
-    (.appendChild n (unchecked-node children))
+    (.appendChild n (-elem children))
     
     (seq? children) 
     (doseq [child children] (append-children n child))
     
     :else 
-    (throw-unable-to-make-node children)
-    ))
-
+    (throw-unable-to-make-node children)))
 
 (defn compound-element
   "element with either attrs or nested children [:div [:span \"Hello\"]]"
@@ -112,10 +109,7 @@
     (-elem data)
     (throw-unable-to-make-node data)))
 
-(defn unchecked-node [data] 
-  (-elem data))
-
 (defn html->nodes [html]
   (let [parent (.createElement js/document "div")]
     (.insertAdjacentHTML parent "beforeend" html)
-    (.. parent -childNodes slice)))
+    (->> parent .-childNodes (.call js/Array.prototype.slice))))
