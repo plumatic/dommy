@@ -20,7 +20,7 @@
   (let [e1 (template/node [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])
         e2 (template-compile/node
               [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])]
-    (doseq [e [e1 e2]] (assert (-> e .-tagName (= "A")))
+    (doseq [e [e1 e2]] (is (-> e .-tagName (= "A")))
            (is= "anchor" (.-textContent e))
            (is= "http://somelink" (.getAttribute e "href"))
            (is= "class1 class2" (.-className e))))
@@ -36,7 +36,7 @@
       (is= "DIV" (.-tagName e))
       (is= "margin-left:15px;" (.getAttribute e "style"))))
   (let [e (template/compound-element [:div (interpose [:br] (repeat 3 "test"))])]
-    (assert (-> e .-outerHTML (= "<div>test<br>test<br>test</div>"))))
+    (is (-> e .-outerHTML (= "<div>test<br>test<br>test</div>"))))
   (let [e1 (template/compound-element [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])
         e2 (template-compile/node [:div.class1 [:span#id1 "span1"] [:span#id2 "span2"]])]
     (doseq [e [e1 e2]]
@@ -61,6 +61,39 @@
       (is= (.-outerHTML (template/base-element :div#id1.class1))
            (.-outerHTML (template/base-element :#id1.class1))))))
 
+(deftest nested-template-test
+   ;; test html for example list form
+  ;; note: if practice you can write the direct form (without the list) you should.
+  (let [spans (for [i (range 2)] [:span (str "span" i)])
+        end [:span.end "end"]
+        h   [:div#id1.class1 (list spans end)]
+        e1 (template/compound-element h)
+        e2 (template/node             h)]
+    (doseq [e [e1 e2]]
+      (is (-> e .-textContent (= "span0span1end")))
+      (is (-> e .-className (= "class1")))
+      (is (-> e .-childNodes .-length (= 3)))
+      (is (-> e .-innerHTML 
+                (= "<span>span0</span><span>span1</span><span class=\"end\">end</span>")))
+      (is (-> e .-childNodes (aget 0) .-innerHTML (= "span0")))
+      (is (-> e .-childNodes (aget 1) .-innerHTML (= "span1")))
+      (is (-> e .-childNodes (aget 2) .-innerHTML (= "end")))))
+  
+  ;; test equivalence of "direct inline" and list forms
+  (let [spans (for [i (range 2)] [:span (str "span" i)])
+        end   [:span.end "end"]
+        h1    [:div.class1 (list spans end)]
+        h2    [:div.class1 spans end]
+        e11 (template/compound-element h1)
+        e12 (template/node             h1)
+        e21 (template/compound-element h2)
+        e22 (template/node             h2)]
+    (doseq [[e1 e2] [[e11 e12]
+                     [e12 e21]
+                     [e21 e22]
+                     [e22 e11]]]
+      (is (= (.-innerHTML e1) (.-innerHTML e2))))))
+
 (deftest boolean 
   (let [e1 (template/node [:option {:selected true} "some text"])
         e1c (template-compile/node [:option {:selected true} "some text"]) 
@@ -80,3 +113,10 @@
   (is= "<a class=\"anchor\" href=\"http://somelink.html\">some-text</a>"
        (.-outerHTML (simple-template ["http://somelink.html" "some-text"]))))
 
+
+(deftemplate nested-template [n]
+  [:ul.class1 (for [i (range n)] [:li i])])
+
+(deftest nested-deftemplate
+  (is= "<ul class=\"class1'\"><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>"
+       (.-outerHTML (nested-template 5))))
