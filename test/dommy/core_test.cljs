@@ -46,12 +46,16 @@
 
 (deftest listener-live
   (let [el-nested (node [:ul])
-        target (node [:li])
+        target (node [:li.class1])
         click-cnt (atom 0)
-        listener (dommy/live-listener el-nested :li (fn [e] (swap! click-cnt inc) true))]
+        listener (dommy/live-listener el-nested :li.class1 #(swap! click-cnt inc))
+        not-target (node [:li])]
     (is= 0 @click-cnt)
     (dommy/append! el-nested target)
-    (listener (js-obj "target" target))
+    (dommy/append! el-nested not-target)
+    (listener (js-obj "target" target))    
+    (is= 1 @click-cnt)
+    (listener (js-obj "target" not-target))    
     (is= 1 @click-cnt)))
 
 ;; Performance test to run in browser
