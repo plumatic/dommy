@@ -54,18 +54,29 @@
 
 (declare node)
 
+(defn throw-unable-to-make-node [node-data]
+  (throw (str "Don't know how to make node from: " (pr-str node-data))))
+ 
+(defn append-children [n children]
+  (cond 
+    (satisfies? PElement children) 
+    (.appendChild n (-elem children))
+    
+    (seq? children) 
+    (doseq [child children] (append-children n child))
+    
+    :else 
+    (throw-unable-to-make-node children)))
+
 (defn compound-element
   "element with either attrs or nested children [:div [:span \"Hello\"]]"
   [data]
   (let [n (base-element (first data))
-        attrs (when (map? (second data)) (second data))
-        tail (drop (if attrs 2 1) data)
-        ;; Remove one level of nesting for cases like [:div [[:span][:span]]]
-        tail (mapcat (fn [group] (if (satisfies? PElement group) [group] group)) tail)]
+        attrs     (when (map? (second data)) (second data))
+        children  (drop (if attrs 2 1) data)]
     (doseq [[k v] attrs]
       (add-attr! n k v))
-    (doseq [child tail]
-      (.appendChild n (node child)))
+    (append-children n children)    
     n))
 
 (extend-protocol PElement
@@ -90,7 +101,7 @@
 (defn node [data]
   (if (satisfies? PElement data)
     (-elem data)
-    (throw (str "Don't know how to make node from " (pr-str data)))))
+    (throw-unable-to-make-node data)))
 
 (defn html->nodes [html]
   (let [parent (.createElement js/document "div")]
