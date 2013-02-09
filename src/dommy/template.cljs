@@ -58,19 +58,29 @@
   (throw (str "Don't know how to make node from: " (pr-str node-data))))
  
 (defn ->document-fragment
-  ([children] (->document-fragment (.createDocumentFragment js/document) children))
-  ([result-frag children]
+  "take data and return a document fragment"
+  ([data]
+     (->document-fragment (.createDocumentFragment js/document) data))
+  ([result-frag data]
       (cond 
-       (satisfies? PElement children) 
-       (do (.appendChild result-frag (-elem children))
+       (satisfies? PElement data) 
+       (do (.appendChild result-frag (-elem data))
            result-frag)
        
-       (seq? children) 
-       (do (doseq [child children] (->document-fragment result-frag child))
+       (seq? data) 
+       (do (doseq [child data] (->document-fragment result-frag child))
            result-frag)
        
        :else 
-       (throw-unable-to-make-node children))))
+       (throw-unable-to-make-node data))))
+
+(defn ->node-like
+  "take data and return DOM node if it satisfies PElement and tries to
+   make a document fragment otherwise"
+  [data]
+  (if (satisfies? PElement data)
+    (-elem data)
+    (->document-fragment data)))
 
 (defn compound-element
   "element with either attrs or nested children [:div [:span \"Hello\"]]"
@@ -80,7 +90,7 @@
         children  (drop (if attrs 2 1) data)]
     (doseq [[k v] attrs]
       (add-attr! n k v))
-    (.appendChild n (->document-fragment children))
+    (.appendChild n (->node-like children))
     n))
 
 (extend-protocol PElement

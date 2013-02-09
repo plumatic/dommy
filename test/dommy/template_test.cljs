@@ -118,5 +118,5 @@
   [:ul.class1 (for [i (range n)] [:li i])])
 
 (deftest nested-deftemplate
-  (is= "<ul class=\"class1'\"><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>"
+  (is= "<ul class=\"class1\"><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>"
        (.-outerHTML (nested-template 5))))
