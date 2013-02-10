@@ -1,5 +1,5 @@
 (defproject prismatic/dommy "0.0.3-SNAPSHOT"
-  :description "No nonsense Clojurescript dom templating and (soon) manipulation"
+  :description "No nonsense Clojurescript dom templating and manipulation"
   :url "https://github.com/prismatic/dommy"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
