@@ -10,7 +10,8 @@ DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is 
 Add the following dependency on your project.clj:
 
 ```clojure
-[prismatic/dommy "0.0.1"]
+;; latest stable release
+[prismatic/dommy "0.0.2"]
 ```
 
 ## Templating Usage
