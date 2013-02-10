@@ -124,4 +124,7 @@
   ([node event-type live-selector f]
      (listen! node event-type (live-listener node live-selector f)))
   ([node event-type f]
-     (.addEventListener node (name event-type) f)))
+     (if (.-addEventListener node)
+       (.addEventListener node (name event-type) f)
+       ;; fucking ie <= 8
+       (.attachEvent node (name event-type) f))))
