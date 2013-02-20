@@ -106,6 +106,17 @@
        (add-class! node class)
        (remove-class! node class))))
 
+(defn hidden? [node]
+  (identical? "none" (-> node .-style .-display)))
+
+(defn toggle!
+  "Display or hide the given `node`. Takes an optional boolean `show?`
+   indicating whether to show or hide `node`."
+  ([node show?]
+     (set! (-> node .-style .-display) (if show? "" "none")))
+  ([node]
+     (toggle! node (hidden? node))))
+
 (defn selector [data]
   (cond
    (coll? data) (clojure.string/join " " (map selector data))

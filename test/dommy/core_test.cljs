@@ -58,6 +58,16 @@
     (listener (js-obj "target" not-target))    
     (is= 1 @click-cnt)))
 
+(deftest toggle!
+  (let [el-simple (node [:div])]
+    (is (not (dommy/hidden? el-simple)))
+    (dommy/toggle! el-simple)
+    (is= "none" (-> el-simple .-style .-display))
+    (dommy/toggle! el-simple false)
+    (is= "none" (-> el-simple .-style .-display))
+    (dommy/toggle! el-simple true)
+    (is (not (dommy/hidden? el-simple)))))
+
 ;; Performance test to run in browser
 
 (defn class-perf-test [node]
