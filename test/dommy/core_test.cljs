@@ -68,6 +68,13 @@
     (dommy/toggle! el-simple true)
     (is (not (dommy/hidden? el-simple)))))
 
+(deftest ->Array
+  (let [array (dommy/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
+    (is (instance? js/Array array))
+    (is= (.-length array) 2)
+    (is= (aget array 0) "lol")
+    (is= (aget array 1) "wut")))
+
 ;; Performance test to run in browser
 
 (defn class-perf-test [node]

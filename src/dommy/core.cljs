@@ -3,6 +3,9 @@
   (:require
    [clojure.string :as str]))
 
+(defn ->Array [array-like]
+  (.call js/Array.prototype.slice array-like))
+
 (defn append!
   "append child to parent, both DOM nodes. return parent"
   [parent child]
