@@ -125,7 +125,7 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 
 Again this is **not** necessary when the attribute map is a literal (that map can even contain symbolic keys or values).
 
-You can also type-hint a symbol as <code>^:text</code> which will enusre the macro appens
+You can also type-hint a symbol as <code>^:text</code> which will ensure the macro appends
 the symbol as a text node and doesn't use the runtime templating.
 
 For instance, this template
