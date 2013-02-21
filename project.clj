@@ -12,7 +12,7 @@
   :plugins [[lein-cljsbuild "0.3.0"]]
   :clojurescript? true
   :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
-                 [prismatic/cljs-test "0.0.2"]] 
+                 [prismatic/cljs-test "0.0.3-SNAPSHOT"]]
   :hooks [leiningen.cljsbuild]
   :cljsbuild 
     {:builds 
@@ -24,5 +24,4 @@
              :compiler {:output-to "target/unit-test.js"
                         :optimizations :whitespace
                         :pretty-print true}}}
-     :test-commands {"unit" ["phantomjs" "target/unit-test.js" "resources/test.html"]}}
-)
+     :test-commands {"unit" ["phantomjs" "target/unit-test.js" "resources/test.html"]}})
