@@ -3,7 +3,8 @@
    [dommy.macros.core :only [sel]])
   (:require
    [clojure.string :as str]
-   [dommy.attrs :as attrs]))
+   [dommy.attrs :as attrs]
+   [dommy.template :as template]))
 
 (def has-class? attrs/has-class?)
 (def add-class! attrs/add-class!)
@@ -18,15 +19,24 @@
 
 (defn append!
   "append child to parent, both DOM nodes. return parent"
-  [parent child]
-  (.appendChild parent child)
+  [parent data]
+  (.appendChild parent (template/->node-like data))
   parent)
 
 (defn prepend! 
   "prepend child to parent, both DOM nodes. return parent"
-  [parent child]
-  (.insertBefore parent child (.-firstChild parent))
+  [parent data]
+  (.insertBefore parent
+                 (template/->node-like data)
+                 (.-firstChild parent))
   parent)
+
+(defn replace!
+  "replace node with new, return new"
+  [node data]
+  (let [new (template/->node-like data)]
+    (.replaceChild (.-parentNode node) new node)
+    new))
 
 (defn remove!
   "remove node from parent, return parent"
@@ -34,12 +44,6 @@
   (let [parent (.-parentNode node)]
     (.removeChild parent node)
     parent))
-
-(defn replace!
-  "replace node with new, return new"
-  [node new]
-  (.replaceChild (.-parentNode node) new node)
-  new)
 
 (defn selector [data]
   (cond
