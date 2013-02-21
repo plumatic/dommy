@@ -1,5 +1,4 @@
-(ns dommy.core-compile)
-
+(ns dommy.macros.core)
 
 (defn constant? [data]  
   (cond

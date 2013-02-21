@@ -1,7 +1,17 @@
 (ns dommy.core
-  (:use-macros [dommy.core-compile :only [sel]])
+  (:use-macros
+   [dommy.macros.core :only [sel]])
   (:require
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [dommy.attrs :as attrs]))
+
+(def has-class? attrs/has-class?)
+(def add-class! attrs/add-class!)
+(def remove-class! attrs/remove-class!)
+(def toggle-class! attrs/toggle-class!)
+(def add-attr! attrs/add-attr!)
+(def hidden? attrs/hidden?)
+(def toggle! attrs/toggle!)
 
 (defn ->Array [array-like]
   (.call js/Array.prototype.slice array-like))
@@ -30,95 +40,6 @@
   [node new]
   (.replaceChild (.-parentNode node) new node)
   new)
-
-(defn- class-match?
-  "does class-name string have class starting at index idx. 
-   only will be used when node.classList doesn't exist"
-  [class-name class idx]
-  (and
-   ;; start
-   (or (zero? idx) (identical? \space (.charAt class-name (dec idx))))
-   ;; stop
-   (let [total-len (.-length class-name)
-         stop (+ idx (.-length class))]
-     (when (<= stop total-len)
-       (or (identical? stop total-len)
-           (identical? \space (.charAt class-name stop)))))))
-
-(defn- class-index
-  "Finds the index of class in a space-delimited class-name
-    only will be used when node.classList doesn't exist"
-  [class-name class]
-  (loop [start-from 0]
-    (let [i (.indexOf class-name class start-from)]
-      (when (>= i 0)
-        (if (class-match? class-name class i)
-          i
-          (recur (+ i (.-length class))))))))
-
-(defn has-class?
-  "Does DOM node have class. Uses node.classList if available
-   and otherwise does fast parse of className string"
-  [node class]
-  (if-let [class-list (.-classList node)]
-    (.contains class-list class)
-    (when-let [i (class-index (.-className node) class)]
-      (>= i 0))))
-
-(defn add-class!
-  "add class to node"
-  [node class]
-  (if-let [class-list (.-classList node)]
-    (.add class-list class)
-    (let [class-name (.-className node)]
-      (when-not (class-index class-name class)
-        (set! (.-className node)
-              (if (identical? class-name "")
-                class
-                (str class-name " " class)))))))
-
-(defn- remove-class-str [init-class-name class]
-  (loop [class-name init-class-name]
-    (let [class-len (.-length class-name)]
-      (if-let [i (class-index class-name class)]
-        (recur (let [end (+ i (.-length class))]
-                 (str (if (< end class-len)                        
-                        (str (.substring class-name 0 i) (.substr class-name (inc end)))
-                        (.substring class-name 0 (dec i))))))
-        class-name))))
-
-(defn remove-class!
-  "remove class from node"
-  [node class]
-  (if-let [class-list (.-classList node)]
-    (.remove  class-list class)
-    (let [class-name (.-className node)
-          new-class-name (remove-class-str class-name (name class))]
-    (when-not (identical? class-name new-class-name)
-      (set! (.-className node) new-class-name)))))
-
-(defn toggle-class!
-  "(toggle-class! node class) will add-class! if node does not have class and remove-class! otherwise.
-   (toggle-class! node class add?) will add-class! if add? is truthy, otherwise it will remove-class!"
-  ([node class]
-     (if-let [class-list (.-classList node)]
-       (.toggle class-list class)
-       (toggle-class! node class (not (has-class? node class)))))
-  ([node class add?]
-     (if add?
-       (add-class! node class)
-       (remove-class! node class))))
-
-(defn hidden? [node]
-  (identical? "none" (-> node .-style .-display)))
-
-(defn toggle!
-  "Display or hide the given `node`. Takes an optional boolean `show?`
-   indicating whether to show or hide `node`."
-  ([node show?]
-     (set! (-> node .-style .-display) (if show? "" "none")))
-  ([node]
-     (toggle! node (hidden? node))))
 
 (defn selector [data]
   (cond

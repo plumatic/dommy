@@ -1,4 +1,4 @@
-(ns dommy.template-compile
+(ns dommy.macros.template
   "Clojure macros to generate procedural DOM building when
    passed nested structured vectors at compile time. Much faster than runtime templating"
   (:require [clojure.string :as str]))
@@ -10,7 +10,7 @@
   `(when ~v
      ~(cond
        (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
-       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.template/style-str ~v))
+       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.attrs/style-str ~v))
        (identical? k :classes) `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
        :else `(.setAttribute ~d ~(name k) ~v))))
 
@@ -43,10 +43,10 @@
        ~@(for [[k v] literal-attrs]
            (if (keyword? k)
              `(compile-add-attr! ~dom-sym ~k ~v)
-             `(dommy.template/add-attr! ~dom-sym ~k ~v)))
+             `(dommy.attrs/add-attr! ~dom-sym ~k ~v)))
        ~@(when var-attrs
            [`(doseq [[k# v#] ~var-attrs]
-               (dommy.template/add-attr! ~dom-sym k# v#))])
+               (dommy.attrs/add-attr! ~dom-sym k# v#))])
        ~@(for [c children]
            `(.appendChild ~dom-sym (node ~c))) 
        ~dom-sym)))

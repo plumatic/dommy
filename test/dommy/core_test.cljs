@@ -1,8 +1,10 @@
 (ns dommy.core-test
-  (:use-macros [dommy.core-compile :only [sel sel1]]
-               [dommy.template-compile :only [node]]
-               [cljs-test.core :only [is is= deftest]])
-  (:require [dommy.core :as dommy]))
+  (:use-macros
+   [dommy.macros.core :only [sel sel1]]
+   [dommy.macros.template :only [node]]
+   [cljs-test.core :only [is is= deftest]])
+  (:require
+   [dommy.core :as dommy]))
 
 (def body js/document.body)
 
