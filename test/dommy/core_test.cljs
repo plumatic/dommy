@@ -21,6 +21,20 @@
     (is= 2 (.-childElementCount container))
     (is= "B" (-> container .-lastChild .-tagName))))
 
+(deftest prepend!
+  (let [container (node [:div])
+        el (node [:span "test"])]
+    (dommy/prepend! container el)
+    (is= 1 (.-childElementCount container))
+    (is= el (.-firstChild container))
+    (dommy/prepend! container "text node")
+    (is= 1 (.-childElementCount container))
+    (is= 2 (-> container .-childNodes .-length))
+    (is= "text node" (.-textContent (aget (.-childNodes container) 0)))
+    (dommy/prepend! container [:b "-elem prepend!"])
+    (is= 2 (.-childElementCount container))
+    (is= "B" (-> container .-firstChild .-tagName))))
+
 (deftest basic-selection
   ;; Simple
   (dommy/append! body (node [:div#foo]))
