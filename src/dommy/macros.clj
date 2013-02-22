@@ -54,8 +54,6 @@
      (str/join " " classes)
      id]))
 
-
-
 (defmacro compile-compound [[node-key & rest]]
   (let [literal-attrs (when (map? (first rest)) (first rest))
         var-attrs (when (and (not literal-attrs) (-> rest first meta :attrs))
@@ -86,6 +84,12 @@
     (or (string? data) (:text (meta data))) `(.createTextNode js/document ~data)
     :else `(dommy.template/->node-like ~data)))
 
-(defmacro deftemplate [name args node-form]
+(defmacro deftemplate [name args & node-forms]
   `(defn ~name ~args
-     (node ~node-form)))
+     ~(if (next node-forms)
+        (let [doc-frag (gensym "frag")]
+          `(let [~doc-frag (.createDocumentFragment js/document)]
+             ~@(for [el node-forms]
+                 `(.appendChild ~doc-frag (node ~el)))
+             ~doc-frag))
+        `(node ~(first node-forms)))))
