@@ -18,16 +18,16 @@
   (.call js/Array.prototype.slice array-like))
 
 (defn append!
-  "append child to parent, both DOM nodes. return parent"
-  [parent data]
-  (.appendChild parent (template/->node-like data))
+  "append `child` to `parent`, both DOM nodes. return `parent`"
+  [parent child]
+  (.appendChild parent (template/->node-like child))
   parent)
 
-(defn prepend! 
-  "prepend child to parent, both DOM nodes. return parent"
-  [parent data]
+(defn prepend!
+  "prepend `child` to `parent`, both DOM nodes. return `parent`"
+  [parent child]
   (.insertBefore parent
-                 (template/->node-like data)
+                 (template/->node-like child)
                  (.-firstChild parent))
   parent)
 
