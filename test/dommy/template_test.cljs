@@ -129,3 +129,22 @@
     (is= 2 (-> frag .-childNodes .-length))
     (is= "<span>foo</span>" (-> frag .-firstChild .-outerHTML))
     (is= "<span>bar</span>" (-> frag .-lastChild .-outerHTML))))
+
+(deftemplate single-template-expression []
+  (for [s ["foo" "bar"]] [:span s]))
+
+(deftest single-template-expression-test
+  (let [frag (single-template-expression)]
+    (is= 2 (-> frag .-childNodes .-length))
+    (is= "<span>foo</span>" (-> frag .-firstChild .-outerHTML))
+    (is= "<span>bar</span>" (-> frag .-lastChild .-outerHTML))))
+
+(deftemplate compound-template-expressions []
+  (for [s ["foo" "bar"]] [:span s])
+  [:span "wtf"])
+
+(deftest compound-template-expressions-test
+  (let [frag (compound-template-expressions)]
+    (is= 3 (-> frag .-childNodes .-length))
+    (is= "<span>foo</span>" (-> frag .-firstChild .-outerHTML))
+    (is= "<span>wtf</span>" (-> frag .-lastChild .-outerHTML))))
