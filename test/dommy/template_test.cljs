@@ -1,7 +1,7 @@
 (ns dommy.template-test
   (:use-macros
-   [dommy.macros.template :only [deftemplate node]]
-   [cljs-test.core :only [is is= deftest]])
+   [cljs-test.core :only [is is= deftest]]
+   [dommy.macros :only [deftemplate node]])
   (:require
    [dommy.template :as template]))
 

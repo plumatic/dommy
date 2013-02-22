@@ -1,8 +1,7 @@
 (ns dommy.core-test
   (:use-macros
-   [dommy.macros.core :only [sel sel1]]
-   [dommy.macros.template :only [node]]
-   [cljs-test.core :only [is is= deftest]])
+   [cljs-test.core :only [is is= deftest]]
+   [dommy.macros :only [sel sel1 node]])
   (:require
    [dommy.core :as dommy]))
 

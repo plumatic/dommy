@@ -1,7 +1,35 @@
-(ns dommy.macros.template
-  "Clojure macros to generate procedural DOM building when
-   passed nested structured vectors at compile time. Much faster than runtime templating"
+(ns dommy.macros
   (:require [clojure.string :as str]))
+
+(declare node)
+
+(defn constant? [data]
+  (cond
+   (coll? data) (every? constant? data)
+   (some #(% data) [number? keyword? string?]) true))
+
+(defn selector [data]
+  (cond
+   (coll? data) (clojure.string/join " " (map selector data))
+   (or (string? data) (keyword? data)) (name data)))
+
+(defn selector-form [data]
+  (if (constant? data)
+     (selector data)
+     `(dommy.core/selector ~data)))
+
+(defmacro sel1
+  ([base data]
+     `(.querySelector ~base ~(selector-form data)))
+  ([data]
+     `(sel1 js/document ~data)))
+
+(defmacro sel 
+  ([base data]
+     `(dommy.core/->Array
+       (.querySelectorAll ~base ~(selector-form data))))
+  ([data]
+     `(sel js/document ~data)))
 
 (defmacro compile-add-attr! 
   "compile-time add attribute"
@@ -26,7 +54,7 @@
      (str/join " " classes)
      id]))
 
-(declare node)
+
 
 (defmacro compile-compound [[node-key & rest]]
   (let [literal-attrs (when (map? (first rest)) (first rest))
@@ -61,14 +89,3 @@
 (defmacro deftemplate [name args node-form]
   `(defn ~name ~args
      (node ~node-form)))
-
-(comment
-   
-  (compile-compound
-   [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])
-
-  (compile-compound [:a ^:attrs (merge {:class "v"})])
-   
-  (parse-keyword :div.class1.class2)
-
-)

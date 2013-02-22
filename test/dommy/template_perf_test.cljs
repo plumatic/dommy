@@ -1,6 +1,6 @@
 (ns dommy.template-perf-test
   (:use-macros
-   [dommy.macros.template :only [node]])
+   [dommy.macros :only [node]])
   (:require
    [dommy.template :as template]
    [crate.core :as crate]))

@@ -1,6 +1,6 @@
 (ns dommy.core
   (:use-macros
-   [dommy.macros.core :only [sel]])
+   [dommy.macros :only [sel]])
   (:require
    [clojure.string :as str]
    [dommy.attrs :as attrs]
