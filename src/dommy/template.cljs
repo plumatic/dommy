@@ -84,11 +84,14 @@
   js/HTMLElement
   (-elem [this] this)
 
-  PersistentVector
-  (-elem [this] (compound-element this))
+  js/DocumentFragment
+  (-elem [this] this)
 
   js/Text
   (-elem [this] this)
+
+  PersistentVector
+  (-elem [this] (compound-element this))
 
   number
   (-elem [this] (.createTextNode js/document (str this)))
