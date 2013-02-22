@@ -1,10 +1,25 @@
 (ns dommy.core-test
-  (:use-macros [dommy.core-compile :only [sel sel1]]
-               [dommy.template-compile :only [node]]
-               [cljs-test.core :only [is is= deftest]])
-  (:require [dommy.core :as dommy]))
+  (:use-macros
+   [cljs-test.core :only [is is= deftest]]
+   [dommy.macros :only [sel sel1 node]])
+  (:require
+   [dommy.core :as dommy]))
 
 (def body js/document.body)
+
+(deftest append!
+  (let [container (node [:div])
+        el (node [:span "test"])]
+    (dommy/append! container el)
+    (is= 1 (.-childElementCount container))
+    (is= el (.-lastChild container))
+    (dommy/append! container "text node")
+    (is= 1 (.-childElementCount container))
+    (is= 2 (-> container .-childNodes .-length))
+    (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
+    (dommy/append! container [:b "-elem append!"])
+    (is= 2 (.-childElementCount container))
+    (is= "B" (-> container .-lastChild .-tagName))))
 
 (deftest basic-selection
   ;; Simple

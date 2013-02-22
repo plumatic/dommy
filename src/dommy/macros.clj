@@ -1,7 +1,35 @@
-(ns dommy.template-compile
-  "Clojure macros to generate procedural DOM building when
-   passed nested structured vectors at compile time. Much faster than runtime templating"
+(ns dommy.macros
   (:require [clojure.string :as str]))
+
+(declare node)
+
+(defn constant? [data]
+  (cond
+   (coll? data) (every? constant? data)
+   (some #(% data) [number? keyword? string?]) true))
+
+(defn selector [data]
+  (cond
+   (coll? data) (clojure.string/join " " (map selector data))
+   (or (string? data) (keyword? data)) (name data)))
+
+(defn selector-form [data]
+  (if (constant? data)
+     (selector data)
+     `(dommy.core/selector ~data)))
+
+(defmacro sel1
+  ([base data]
+     `(.querySelector ~base ~(selector-form data)))
+  ([data]
+     `(sel1 js/document ~data)))
+
+(defmacro sel 
+  ([base data]
+     `(dommy.core/->Array
+       (.querySelectorAll ~base ~(selector-form data))))
+  ([data]
+     `(sel js/document ~data)))
 
 (defmacro compile-add-attr! 
   "compile-time add attribute"
@@ -10,7 +38,7 @@
   `(when ~v
      ~(cond
        (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
-       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.template/style-str ~v))
+       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.attrs/style-str ~v))
        (identical? k :classes) `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
        :else `(.setAttribute ~d ~(name k) ~v))))
 
@@ -25,8 +53,6 @@
     [(if (empty? node-tag) "div" node-tag)
      (str/join " " classes)
      id]))
-
-(declare node)
 
 (defmacro compile-compound [[node-key & rest]]
   (let [literal-attrs (when (map? (first rest)) (first rest))
@@ -43,10 +69,10 @@
        ~@(for [[k v] literal-attrs]
            (if (keyword? k)
              `(compile-add-attr! ~dom-sym ~k ~v)
-             `(dommy.template/add-attr! ~dom-sym ~k ~v)))
+             `(dommy.attrs/add-attr! ~dom-sym ~k ~v)))
        ~@(when var-attrs
            [`(doseq [[k# v#] ~var-attrs]
-               (dommy.template/add-attr! ~dom-sym k# v#))])
+               (dommy.attrs/add-attr! ~dom-sym k# v#))])
        ~@(for [c children]
            `(.appendChild ~dom-sym (node ~c))) 
        ~dom-sym)))
@@ -67,25 +93,3 @@
                  `(.appendChild ~doc-frag (node ~el)))
              ~doc-frag))
         `(node ~(first node-forms)))))
-
-(comment
-   
-  (compile-compound
-   [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])
-
-  (compile-compound [:a ^:attrs (merge {:class "v"})])
-   
-  (parse-keyword :div.class1.class2)
-
-  (node (for [i (range n)] [:li i]))
-
-  (deftemplate test []
-    [:span.class1 "foo"] [:span.class2 "bar"])
-
-  (deftemplate test2 []
-    [:span "foo"])
-
-  (deftemplate nested-template [n]
-    [:ul.class1 (for [i (range n)] [:li i])])
-
-)

@@ -1,24 +1,10 @@
 (ns dommy.template
-  (:require [clojure.string :as str]
-            [dommy.core :as dommy]))
+  (:require
+   [clojure.string :as str]
+   [dommy.attrs :as attrs]))
 
 (defprotocol PElement
   (-elem [this] "return the element representation of this"))
-
-(defn style-str [m]
-  (->> m
-       (map (fn [[k v]] (str (name k) ":" (name v) ";")))
-       (str/join " ")))
-
-(defn add-attr! 
-  "can have a seq for :classes key or a map for :style"
-  [node k v]
-  (when v 
-    (case k
-      :class (dommy/add-class! node v)
-      :classes (doseq [c v] (dommy/add-class! node c))
-      :style (.setAttribute node (name k) (style-str v))
-      (.setAttribute node (name k) v)))) 
 
 (defn next-css-index [s start-idx]
   "index of css character (#,.) in base-element. bottleneck"
@@ -46,13 +32,11 @@
                      (.substring str 0 next-idx)
                      str)]
           (case (.charAt frag 0)
-            \. (dommy/add-class! node (.substring frag 1))
+            \. (attrs/add-class! node (.substring frag 1))
             \# (.setAttribute node "id" (.substring frag 1)))
           (when (>= next-idx 0)
             (recur (.substring str next-idx))))))
     node))
-
-(declare node)
 
 (defn throw-unable-to-make-node [node-data]
   (throw (str "Don't know how to make node from: " (pr-str node-data))))
@@ -92,7 +76,7 @@
         attrs     (when (map? (second data)) (second data))
         children  (drop (if attrs 2 1) data)]
     (doseq [[k v] attrs]
-      (add-attr! n k v))
+      (attrs/add-attr! n k v))
     (.appendChild n (->node-like children))
     n))
 

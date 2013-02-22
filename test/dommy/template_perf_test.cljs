@@ -1,7 +1,9 @@
 (ns dommy.template-perf-test
-  (:require [dommy.template :as template]
-            [crate.core :as crate])
-  (:require-macros [dommy.template-compile :as template-compile]))
+  (:use-macros
+   [dommy.macros :only [node]])
+  (:require
+   [dommy.template :as template]
+   [crate.core :as crate]))
 
 ;; Perf Test: dommy vs. crate. vs. jQuery
 
@@ -13,7 +15,7 @@
 
 
 (defn dommy-compiled [datum]
-  (template-compile/node
+  (node
    [:li [:a {:href (str "#show/" (:key datum))}
          [:div.class1.class2 {:id (str "item" (:key datum))}
           [:span.anchor (:name datum)]]]]))
