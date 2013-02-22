@@ -12,7 +12,7 @@
   :plugins [[lein-cljsbuild "0.3.0"]]
   :clojurescript? true
   :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
-                 [prismatic/cljs-test "0.0.3-SNAPSHOT"]]
+                 [prismatic/cljs-test "0.0.2"]]
   :hooks [leiningen.cljsbuild]
   :cljsbuild 
     {:builds 
