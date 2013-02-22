@@ -58,9 +58,15 @@
     (or (string? data) (:text (meta data))) `(.createTextNode js/document ~data)
     :else `(dommy.template/->node-like ~data)))
 
-(defmacro deftemplate [name args node-form]
+(defmacro deftemplate [name args & node-forms]
   `(defn ~name ~args
-     (node ~node-form)))
+     ~(if (next node-forms)
+        (let [doc-frag (gensym "frag")]
+          `(let [~doc-frag (.createDocumentFragment js/document)]
+             ~@(for [el node-forms]
+                 `(.appendChild ~doc-frag (node ~el)))
+             ~doc-frag))
+        `(node ~(first node-forms)))))
 
 (comment
    
@@ -70,5 +76,16 @@
   (compile-compound [:a ^:attrs (merge {:class "v"})])
    
   (parse-keyword :div.class1.class2)
+
+  (node (for [i (range n)] [:li i]))
+
+  (deftemplate test []
+    [:span.class1 "foo"] [:span.class2 "bar"])
+
+  (deftemplate test2 []
+    [:span "foo"])
+
+  (deftemplate nested-template [n]
+    [:ul.class1 (for [i (range n)] [:li i])])
 
 )
