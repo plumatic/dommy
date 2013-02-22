@@ -148,3 +148,9 @@
     (is= 3 (-> frag .-childNodes .-length))
     (is= "<span>foo</span>" (-> frag .-firstChild .-outerHTML))
     (is= "<span>wtf</span>" (-> frag .-lastChild .-outerHTML))))
+
+(deftemplate nil-template []
+  nil)
+
+(deftest nil-template-test
+  (is= 0 (-> (nil-template) .-childNodes .-length)))
