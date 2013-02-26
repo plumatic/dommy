@@ -14,6 +14,17 @@
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
 
+(defn dissoc-in
+  "Dissociate this keyseq from m, removing any empty maps created as a result
+   (including at the top-level)."
+  [m [k & ks]]
+  (when m
+    (if-let [res (and ks (dissoc-in (m k) ks))]
+      (assoc m k res)
+      (let [res (dissoc m k)]
+        (when-not (empty? res)
+          res)))))
+
 (defn ->Array [array-like]
   (.call js/Array.prototype.slice array-like))
 
@@ -64,8 +75,8 @@
   (defn unlisten!
     ([node event-type live-selector f]
        (let [listener-key [node event-type live-selector f]
-             live-fn (@live-listeners listener-key)]
-         (swap! live-listeners dissoc listener-key)
+             live-fn (get-in @live-listeners listener-key)]
+         (swap! live-listeners dissoc-in listener-key)
          (unlisten! node event-type live-fn)))
     ([node event-type f]
        (.removeEventListener node (name event-type) f)))
@@ -73,7 +84,7 @@
   (defn listen!
     ([node event-type live-selector f]
        (let [live-fn (live-listener node live-selector f)]
-         (swap! live-listeners assoc
+         (swap! live-listeners assoc-in
                 [node event-type live-selector f]
                 live-fn)
          (listen! node event-type live-fn)))
