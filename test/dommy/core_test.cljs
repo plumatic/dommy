@@ -73,19 +73,41 @@
     (click! el-simple)
     (is= 1 @click-cnt)))
 
-(deftest listener-live
-  (let [el-nested (node [:ul])
-        target (node [:li.class1])
+(deftest closest
+  (let [parent (node [:.parent [:.child [:.grandchild]]])
+        child (sel1 parent :.child)
+        grandchild (sel1 parent :.grandchild)]
+    (is= grandchild (dommy/closest parent grandchild :.grandchild))
+    (is= child (dommy/closest parent grandchild :.child))
+    (is (nil? (dommy/closest parent grandchild :.parent)))
+    (dommy/append! js/document.body parent)
+    (is= parent (dommy/closest grandchild :.parent))))
+
+(deftest live-listener
+  (let [parent (node [:.parent [:.child [:.grandchild]]])
+        child (sel1 parent :.child)
+        grandchild (sel1 parent :.grandchild)
         click-cnt (atom 0)
-        listener (dommy/live-listener el-nested :li.class1 #(swap! click-cnt inc))
-        not-target (node [:li])]
-    (is= 0 @click-cnt)
-    (dommy/append! el-nested target)
-    (dommy/append! el-nested not-target)
-    (listener (js-obj "target" target))    
+        fake-event (js-obj "target" grandchild)]
+    ((dommy/live-listener
+      parent :.grandchild
+      (fn [event]
+        (swap! click-cnt inc)
+        (is= grandchild (.-currentTarget event))))
+     fake-event)
     (is= 1 @click-cnt)
-    (listener (js-obj "target" not-target))    
-    (is= 1 @click-cnt)))
+    ((dommy/live-listener
+      parent :.child
+      (fn [event]
+        (swap! click-cnt inc)
+        (is= child (.-currentTarget event))))
+     fake-event)
+    (is= 2 @click-cnt)
+    ((dommy/live-listener
+      parent :.parent
+      #(swap! click-cnt inc))
+     fake-event)
+    (is= 2 @click-cnt)))
 
 (deftest toggle!
   (let [el-simple (node [:div])]

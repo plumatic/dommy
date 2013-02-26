@@ -50,13 +50,27 @@
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
 
+(defn closest
+  "closest ancestor of `node` (up to `base`, if provided)
+   that matches `selector`"
+  ([base node selector]
+     (let [matches (sel base selector)]
+       (loop [ancestor node]
+         (when (not= base ancestor)
+           (if (-> matches
+                   (.indexOf ancestor)
+                   (>= 0))
+             ancestor
+             (recur (.-parentNode ancestor)))))))
+  ([node selector]
+     (closest js/document node selector)))
+
 (defn live-listener
   "fires f if event.target is found within the specified selector"
   [node selector f]
   (fn [event]
-    (when (-> (sel node selector)
-              (.indexOf (.-target event))
-              (>= 0))
+    (when-let [current-target (closest node (.-target event) selector)]
+      (set! (.-currentTarget event) current-target)
       (f event))))
 
 (defn listen!
