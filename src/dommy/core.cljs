@@ -14,6 +14,17 @@
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
 
+(defn dissoc-in
+  "Dissociate this keyseq from m, removing any empty maps created as a result
+   (including at the top-level)."
+  [m [k & ks]]
+  (when m
+    (if-let [res (and ks (dissoc-in (m k) ks))]
+      (assoc m k res)
+      (let [res (dissoc m k)]
+        (when-not (empty? res)
+          res)))))
+
 (defn ->Array [array-like]
   (.call js/Array.prototype.slice array-like))
 
@@ -84,19 +95,48 @@
   ([node selector]
      (closest js/document node selector)))
 
-(defn live-listener
-  "fires f if event.target is found within the specified selector"
-  [node selector f]
-  (fn [event]
-    (when-let [current-target (closest node (.-target event) selector)]
-      (set! (.-currentTarget event) current-target)
-      (f event))))
+(let [live-listeners (atom {})]
 
-(defn listen!
-  ([node event-type live-selector f]
-     (listen! node event-type (live-listener node live-selector f)))
-  ([node event-type f]
-     (if (.-addEventListener node)
-       (.addEventListener node (name event-type) f)
-       ;; fucking ie <= 8
-       (.attachEvent node (name event-type) f))))
+  (defn live-listener
+    "fires f if event.target is found within the specified selector"
+    [node selector f]
+    (fn [event]
+      (when-let [current-target (closest node (.-target event) selector)]
+        (set! (.-currentTarget event) current-target)
+        (f event))))
+
+  (defn unlisten!
+    ([node event-type live-selector f]
+       (let [listener-key [node event-type live-selector f]
+             live-fn (get-in @live-listeners listener-key)]
+         (swap! live-listeners dissoc-in listener-key)
+         (unlisten! node event-type live-fn)))
+    ([node event-type f]
+       (.removeEventListener node (name event-type) f)))
+
+  (defn listen!
+    ([node event-type live-selector f]
+       (let [live-fn (live-listener node live-selector f)]
+         (swap! live-listeners assoc-in
+                [node event-type live-selector f]
+                live-fn)
+         (listen! node event-type live-fn)))
+    ([node event-type f]
+       (if (.-addEventListener node)
+         (.addEventListener node (name event-type) f)
+         ;; fucking ie <= 8
+         (.attachEvent node (name event-type) f))))
+
+  (defn listen-once!
+    ([node event-type live-selector f]
+       (listen!
+        node event-type live-selector
+        (fn [e]
+          (unlisten! node event-type live-selector f)
+          (f e))))
+    ([node event-type f]
+       (listen!
+        node event-type
+        (fn [e]
+          (unlisten! node event-type f)
+          (f e))))))
