@@ -96,22 +96,16 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
-(defn click!
-  "Simulates a click event on node"
-  [node]
-  (let [event (.createEvent js/document "MouseEvents")]
-    (.initMouseEvent event "click" true true)
-    (.dispatchEvent node event)))
+(defn fire!
+  [node event-type]
+  (if (.-createEvent js/document)
+    (let [event (.createEvent js/document "Event")]
+      (.initEvent event (name event-type) true true)
+      (.dispatchEvent node event))
+    (.fireEvent node (str "on" (name event-type))
+                (.createEventObject js/document))))
 
-(deftest listener-simple
-  (let [el-simple (node [:div#id])
-        click-cnt (atom 0)]
-    (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
-    (is= 0 @click-cnt)
-    (click! el-simple)
-    (is= 1 @click-cnt)))
-
-(deftest listener-live
+(deftest live-listener
   (let [el-nested (node [:ul])
         target (node [:li.class1])
         click-cnt (atom 0)
@@ -123,6 +117,26 @@
     (listener (js-obj "target" target))    
     (is= 1 @click-cnt)
     (listener (js-obj "target" not-target))    
+    (is= 1 @click-cnt)))
+
+(deftest listen!
+  (let [el-simple (node [:div#id])
+        click-cnt (atom 0)]
+    (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
+    (is= 0 @click-cnt)
+    (fire! el-simple :click)
+    (is= 1 @click-cnt)))
+
+(deftest unlisten!
+  (let [el-nested (node [:ul [:li "Test"]])
+        click-cnt (atom 0)
+        listener #(swap! click-cnt inc)]
+    (dommy/append! js/document.body el-nested)
+    (dommy/listen! el-nested :click :li listener)
+    (fire! (sel1 el-nested :li) :click)
+    (is= 1 @click-cnt)
+    (dommy/unlisten! el-nested :click :li listener)
+    (fire! (sel1 el-nested :li) :click)
     (is= 1 @click-cnt)))
 
 (deftest toggle!
