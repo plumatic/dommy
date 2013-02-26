@@ -133,14 +133,14 @@
       parent :.grandchild
       (fn [event]
         (swap! click-cnt inc)
-        (is= grandchild (.-currentTarget event))))
+        (is= grandchild (.-selectedTarget event))))
      fake-event)
     (is= 1 @click-cnt)
     ((dommy/live-listener
       parent :.child
       (fn [event]
         (swap! click-cnt inc)
-        (is= child (.-currentTarget event))))
+        (is= child (.-selectedTarget event))))
      fake-event)
     (is= 2 @click-cnt)
     ((dommy/live-listener

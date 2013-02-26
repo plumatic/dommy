@@ -101,8 +101,8 @@
     "fires f if event.target is found within the specified selector"
     [node selector f]
     (fn [event]
-      (when-let [current-target (closest node (.-target event) selector)]
-        (set! (.-currentTarget event) current-target)
+      (when-let [selected-target (closest node (.-target event) selector)]
+        (set! (.-selectedTarget event) selected-target)
         (f event))))
 
   (defn unlisten!
