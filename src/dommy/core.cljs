@@ -31,6 +31,25 @@
                  (.-firstChild parent))
   parent)
 
+(defn insert-before!
+  "insert `node` before `other`, both DOM nodes,
+   `other` must have a parent. return `node`"
+  [node other]
+  (let [actual-node (template/->node-like node)]
+    (.insertBefore (.-parentNode other) actual-node other)
+    actual-node))
+
+(defn insert-after!
+  "insert `node` after `other`, both DOM nodes,
+   `other` must have a parent. return `node`"
+  [node other]
+  (let [actual-node (template/->node-like node)
+        parent (.-parentNode other)]
+    (if-let [next (.-nextSibling other)]
+      (.insertBefore parent actual-node next)
+      (.appendChild parent actual-node))
+    actual-node))
+
 (defn replace!
   "replace node with new, return new"
   [node data]

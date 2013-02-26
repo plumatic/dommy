@@ -35,6 +35,44 @@
     (is= 2 (.-childElementCount container))
     (is= "B" (-> container .-firstChild .-tagName))))
 
+(deftest insert-before!
+  (let [container (node [:div])
+        placemark (node [:span "placemark"])
+        el (node [:span "test"])]
+    (dommy/append! container placemark)
+    (let [res (dommy/insert-before! el placemark)]
+      (is= 2 (.-childElementCount container))
+      (is= el (.-firstChild container))
+      (is= res el))
+    (let [res (dommy/insert-before! "text node" placemark)]
+      (is= 2 (.-childElementCount container))
+      (is= 3 (-> container .-childNodes .-length))
+      (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
+      (is= res (aget (.-childNodes container) 1)))
+    (let [res (dommy/insert-before! [:b "-elem insert-before!"] placemark)]
+      (is= 3 (.-childElementCount container))
+      (is= "B" (-> res .-tagName))
+      (is= res (aget (.-childNodes container) 2)))))
+
+(deftest insert-after!
+  (let [container (node [:div])
+        placemark (node [:span "placemark"])
+        el (node [:span "test"])]
+    (dommy/prepend! container placemark)
+    (let [res (dommy/insert-after! el placemark)]
+      (is= 2 (.-childElementCount container))
+      (is= el (.-lastChild container))
+      (is= res el))
+    (let [res (dommy/insert-after! "text node" placemark)]
+      (is= 2 (.-childElementCount container))
+      (is= 3 (-> container .-childNodes .-length))
+      (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
+      (is= res (aget (.-childNodes container) 1)))
+    (let [res (dommy/insert-after! [:b "-elem insert-after!"] placemark)]
+      (is= 3 (.-childElementCount container))
+      (is= "B" (-> res .-tagName))
+      (is= res (aget (.-childNodes container) 1)))))
+
 (deftest basic-selection
   ;; Simple
   (dommy/append! body (node [:div#foo]))
