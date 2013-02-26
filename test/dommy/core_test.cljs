@@ -107,7 +107,7 @@
 ;; Performance test to run in browser
 
 (defn class-perf-test [node]
-  (let [start (.now js/Date)]        
+  (let [start (.now js/Date)]
     (dotimes [i 1e6]
       (dommy/has-class? node (str "class" (inc (mod i 10))))
       (dommy/toggle-class! node (str "class" (inc (mod i 10)))))
@@ -115,7 +115,7 @@
 
 (defn jquery-perf-test [node]
   (let [node (js/jQuery node)
-        start (.now js/Date)]        
+        start (.now js/Date)]
     (dotimes [i 1e6]
       (.hasClass node (str "class" (inc (mod i 10))))
       (.toggleClass node (str "class" (inc (mod i 10)))))
