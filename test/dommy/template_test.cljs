@@ -120,3 +120,10 @@
 (deftest nested-deftemplate
   (is= "<ul class=\"class1\"><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>"
        (.-outerHTML (nested-template 5))))
+
+(deftemplate span-wrapper [content]
+  [:span content])
+
+(deftest empty-string-in-template
+  (is= "<span></span>"
+       (.-outerHTML (span-wrapper ""))))
