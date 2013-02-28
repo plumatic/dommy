@@ -124,7 +124,12 @@
        (listen! [node :.selector.for :.some.descendants] :click click-handler)
 
    then `click-handler` will be set as a listener for `click` events
-   on descendants of `node` that match the selector"
+   on descendants of `node` that match the selector
+
+   Also accepts any number of event-type and handler pairs for setting
+   multiple listeners at once:
+
+       (listen! some-node :click click-handler :hover hover-handler)"
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
   (let [[node selector] (node-and-selector node-sel)]
@@ -133,6 +138,7 @@
       (update-event-listeners! node assoc-in [selector type f] canonical-f)
       (if (.-addEventListener node)
         (.addEventListener node (name type) canonical-f)
+        ;; For IE < 9
         (.attachEvent node (name type) canonical-f)))))
 
 (defn unlisten!
@@ -146,7 +152,7 @@
 
       (unlisten! [node :.selector]
         :click event-listener
-        :mouseover other-event-listener))"
+        :mouseover other-event-listener)"
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
   (let [[node selector] (node-and-selector node-sel)]
@@ -157,15 +163,12 @@
       (.removeEventListener node (name type) canonical-f))))
 
 (defn listen-once!
-  ([node event-type live-selector f]
-     (listen!
-      [node live-selector] event-type
-      (fn [e]
-        (unlisten! [node live-selector] event-type f)
-        (f e))))
-  ([node event-type f]
-     (listen!
-      node event-type
-      (fn [e]
-        (unlisten! node event-type f)
-        (f e)))))
+  [node-sel & type-fs]
+  (assert (even? (count type-fs)))
+  (let [[node selector] (node-and-selector node-sel)]
+    (doseq [[type f] (partition 2 type-fs)]
+      (listen!
+       node-sel type
+       (fn this-fn [e]
+         (unlisten! node-sel type this-fn)
+         (f e))))))

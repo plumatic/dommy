@@ -176,6 +176,15 @@
     (fire! el :dblclick)
     (is= 2 @click-cnt)))
 
+(deftest listen-once!
+  (let [el (node :.test)
+        click-cnt (atom 0)]
+    (dommy/listen-once! el :click #(swap! click-cnt inc))
+    (fire! el :click)
+    (is= 1 @click-cnt)
+    (fire! el :click)
+    (is= 1 @click-cnt)))
+
 (deftest toggle!
   (let [el-simple (node [:div])]
     (is (not (dommy/hidden? el-simple)))
