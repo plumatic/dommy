@@ -125,13 +125,15 @@
 
    then `click-handler` will be set as a listener for `click` events
    on descendants of `node` that match the selector"
-  [node-sel event-type f]
-  (let [[node selector] (node-and-selector node-sel)
-        canonical-f (if-not selector f (live-listener node selector f))]
-    (update-event-listeners! node assoc-in [selector event-type f] canonical-f)
-    (if (.-addEventListener node)
-      (.addEventListener node (name event-type) canonical-f)
-      (.attachEvent node (name event-type) canonical-f))))
+  [node-sel & type-fs]
+  (assert (even? (count type-fs)))
+  (let [[node selector] (node-and-selector node-sel)]
+    (doseq [[type f] (partition 2 type-fs)
+            :let [canonical-f (if-not selector f (live-listener node selector f))]]
+      (update-event-listeners! node assoc-in [selector type f] canonical-f)
+      (if (.-addEventListener node)
+        (.addEventListener node (name type) canonical-f)
+        (.attachEvent node (name type) canonical-f)))))
 
 (defn unlisten!
   "Removes event listener for the node defined in `node-sel`,
@@ -140,21 +142,19 @@
   The following forms are allowed, and will remove all handlers
   that match the parameters passed in:
   
-      (unlisten! node :click)
+      (unlisten! [node :.selector] :click event-listener)
 
-      (unlisten! [node :#children :.selectors] :click)
-
-      (unlisten! [node :.selector] :click event-listener)"
-  [node-sel & [event-type f :as args]]
-  (let [[node selector] (node-and-selector node-sel)
-        keys (cons selector args)
-        end-val (get-in (event-listeners node) keys)
-        canonical-fs (if (map? end-val) end-val {:_ end-val})]
-    (doseq [[_ canonical-f] canonical-fs]
-      (.removeEventListener node (name event-type) canonical-f))
-    (when (nil? selector)
-      (doseq [[selector _] (event-listeners node)]
-        (unlisten! (flatten [node selector]) event-type)))))
+      (unlisten! [node :.selector]
+        :click event-listener
+        :mouseover other-event-listener))"
+  [node-sel & type-fs]
+  (assert (even? (count type-fs)))
+  (let [[node selector] (node-and-selector node-sel)]
+    (doseq [[type f] (partition 2 type-fs)
+            :let [keys [selector type f]
+                  canonical-f (get-in (event-listeners node) keys)]]
+      (update-event-listeners! node dissoc-in keys)
+      (.removeEventListener node (name type) canonical-f))))
 
 (defn listen-once!
   ([node event-type live-selector f]

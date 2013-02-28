@@ -128,6 +128,17 @@
     (fire! el-simple :click)
     (is= 1 @click-cnt)))
 
+(deftest listen!-multi
+  (let [el (node :.test)
+        click-cnt (atom 0)
+        listener #(swap! click-cnt inc)]
+    (dommy/listen! el :click listener :dblclick listener)
+    (is= 0 @click-cnt)
+    (fire! el :click)
+    (is= 1 @click-cnt)
+    (fire! el :dblclick)
+    (is= 2 @click-cnt)))
+
 (deftest unlisten!
   (let [el-nested (node [:ul [:li "Test"]])
         click-cnt (atom 0)
@@ -142,18 +153,28 @@
     (dommy/listen! [el-nested :li] :click listener)
     (fire! (sel1 el-nested :li) :click)
     (is= 2 @click-cnt)
-    (dommy/unlisten! [el-nested :li] :click)
-    (fire! (sel1 el-nested :li) :click)
-    (is= 2 @click-cnt)
     (let [el-nested (node [:.parent [:.child [:.grandchild]]])]
       (dommy/append! js/document.body el-nested)
-      #_(js* "debugger")
       (dommy/listen! [el-nested :.child :.grandchild] :click listener)
       (fire! (sel1 el-nested :.grandchild) :click)
       (is= 3 @click-cnt)
-      (dommy/unlisten! [el-nested :.child :.grandchild] :click)
+      (dommy/unlisten! [el-nested :.child :.grandchild] :click listener)
       (fire! (sel1 el-nested [:.child :.grandchild]) :click)
       (is= 3 @click-cnt))))
+
+(deftest unlisten!-multi
+  (let [el (node :.test)
+        click-cnt (atom 0)
+        listener #(swap! click-cnt inc)]
+    (dommy/append! js/document.body el)
+    (dommy/listen! el :click listener :dblclick listener)
+    (fire! el :click)
+    (fire! el :dblclick)
+    (is= 2 @click-cnt)
+    (dommy/unlisten! el :click listener :dblclick listener)
+    (fire! el :click)
+    (fire! el :dblclick)
+    (is= 2 @click-cnt)))
 
 (deftest toggle!
   (let [el-simple (node [:div])]
