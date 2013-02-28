@@ -80,6 +80,16 @@
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
 
+(defn descendant?
+  "is `descendant` a descendant of `ancestor`?"
+  [descendant ancestor]
+  ;; http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html
+  (cond (.-contains ancestor)
+          (.contains ancestor descendant)
+        (.-compareDocumentPosition ancestor)
+          (-> (.compareDocumentPosition ancestor descendant)
+              (bit-test 4))))
+
 (defn live-listener
     "fires f if event.target is found within the specified selector"
     [node selector f]

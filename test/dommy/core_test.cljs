@@ -96,6 +96,22 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
+(deftest descendant?
+  (let [grandchild (node :.grandchild)
+        child (node [:.child grandchild])
+        sibling (node :.sibling)
+        parent (node [:.parent child sibling])]
+    (doseq [contains? [true false]]
+      (when-not contains?
+        (doseq [n [grandchild child sibling parent]]
+          (set! (.-contains n) nil)))
+      (is (dommy/descendant? child parent))
+      (is (dommy/descendant? grandchild parent))
+      (is (not (dommy/descendant? parent child)))
+      (is (not (dommy/descendant? parent grandchild)))
+      (is (not (dommy/descendant? grandchild sibling)))
+      (is (not (dommy/descendant? child sibling))))))
+
 (defn fire!
   "Only works when `node` is in the DOM"
   [node event-type]
