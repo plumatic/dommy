@@ -97,6 +97,7 @@
     (is (dommy/has-class? el-simple "test"))))
 
 (defn fire!
+  "Only works when `node` is in the DOM"
   [node event-type]
   (if (.-createEvent js/document)
     (let [event (.createEvent js/document "Event")]
@@ -132,12 +133,27 @@
         click-cnt (atom 0)
         listener #(swap! click-cnt inc)]
     (dommy/append! js/document.body el-nested)
-    (dommy/listen! el-nested :click :li listener)
+    (dommy/listen! [el-nested :li] :click listener)
     (fire! (sel1 el-nested :li) :click)
     (is= 1 @click-cnt)
-    (dommy/unlisten! el-nested :click :li listener)
+    (dommy/unlisten! [el-nested :li] :click listener)
     (fire! (sel1 el-nested :li) :click)
-    (is= 1 @click-cnt)))
+    (is= 1 @click-cnt)
+    (dommy/listen! [el-nested :li] :click listener)
+    (fire! (sel1 el-nested :li) :click)
+    (is= 2 @click-cnt)
+    (dommy/unlisten! [el-nested :li] :click)
+    (fire! (sel1 el-nested :li) :click)
+    (is= 2 @click-cnt)
+    (let [el-nested (node [:.parent [:.child [:.grandchild]]])]
+      (dommy/append! js/document.body el-nested)
+      #_(js* "debugger")
+      (dommy/listen! [el-nested :.child :.grandchild] :click listener)
+      (fire! (sel1 el-nested :.grandchild) :click)
+      (is= 3 @click-cnt)
+      (dommy/unlisten! [el-nested :.child :.grandchild] :click)
+      (fire! (sel1 el-nested [:.child :.grandchild]) :click)
+      (is= 3 @click-cnt))))
 
 (deftest toggle!
   (let [el-simple (node [:div])]

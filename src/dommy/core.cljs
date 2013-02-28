@@ -80,9 +80,7 @@
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
 
-(let [live-listeners (atom {})]
-
-  (defn live-listener
+(defn live-listener
     "fires f if event.target is found within the specified selector"
     [node selector f]
     (fn [e]
@@ -91,38 +89,83 @@
                 (>= 0))
         (f e))))
 
-  (defn unlisten!
-    ([node event-type live-selector f]
-       (let [listener-key [node event-type live-selector f]
-             live-fn (get-in @live-listeners listener-key)]
-         (swap! live-listeners dissoc-in listener-key)
-         (unlisten! node event-type live-fn)))
-    ([node event-type f]
-       (.removeEventListener node (name event-type) f)))
+(defn- event-listeners
+  "Returns a nested map of event listeners on `nodes`"
+  [node]
+  (or (.-dommyEventListeners node) {}))
 
-  (defn listen!
-    ([node event-type live-selector f]
-       (let [live-fn (live-listener node live-selector f)]
-         (swap! live-listeners assoc-in
-                [node event-type live-selector f]
-                live-fn)
-         (listen! node event-type live-fn)))
-    ([node event-type f]
-       (if (.-addEventListener node)
-         (.addEventListener node (name event-type) f)
-         ;; fucking ie <= 8
-         (.attachEvent node (name event-type) f))))
+(defn- update-event-listeners!
+  [node f & args]
+  (set! (.-dommyEventListeners node)
+        (apply f (event-listeners node) args)))
 
-  (defn listen-once!
-    ([node event-type live-selector f]
-       (listen!
-        node event-type live-selector
-        (fn [e]
-          (unlisten! node event-type live-selector f)
-          (f e))))
-    ([node event-type f]
-       (listen!
-        node event-type
-        (fn [e]
-          (unlisten! node event-type f)
-          (f e))))))
+(defn- node-and-selector
+  [node-sel]
+  (if (sequential? node-sel)
+    ((juxt first rest) node-sel)
+    [node-sel nil]))
+
+(defn listen!
+  "Adds `f` as a listener for events of type `event-type` on
+   `node-sel`, which must either be a DOM node, or a sequence
+   whose first item is a DOM node.
+
+   In other words, the call to `listen!` can take two forms:
+
+   If `node-sel` is a DOM node, i.e., you're doing something like:
+
+       (listen! node :click click-handler)
+
+   then `click-handler` will be set as a listener for `click` events
+   on the `node`.
+
+   If `node-sel` is a sequence:
+
+       (listen! [node :.selector.for :.some.descendants] :click click-handler)
+
+   then `click-handler` will be set as a listener for `click` events
+   on descendants of `node` that match the selector"
+  [node-sel event-type f]
+  (let [[node selector] (node-and-selector node-sel)
+        canonical-f (if-not selector f (live-listener node selector f))]
+    (update-event-listeners! node assoc-in [selector event-type f] canonical-f)
+    (if (.-addEventListener node)
+      (.addEventListener node (name event-type) canonical-f)
+      (.attachEvent node (name event-type) canonical-f))))
+
+(defn unlisten!
+  "Removes event listener for the node defined in `node-sel`,
+   which is the same format as listen!.
+
+  The following forms are allowed, and will remove all handlers
+  that match the parameters passed in:
+  
+      (unlisten! node :click)
+
+      (unlisten! [node :#children :.selectors] :click)
+
+      (unlisten! [node :.selector] :click event-listener)"
+  [node-sel & [event-type f :as args]]
+  (let [[node selector] (node-and-selector node-sel)
+        keys (cons selector args)
+        end-val (get-in (event-listeners node) keys)
+        canonical-fs (if (map? end-val) end-val {:_ end-val})]
+    (doseq [[_ canonical-f] canonical-fs]
+      (.removeEventListener node (name event-type) canonical-f))
+    (when (nil? selector)
+      (doseq [[selector _] (event-listeners node)]
+        (unlisten! (flatten [node selector]) event-type)))))
+
+(defn listen-once!
+  ([node event-type live-selector f]
+     (listen!
+      [node live-selector] event-type
+      (fn [e]
+        (unlisten! [node live-selector] event-type f)
+        (f e))))
+  ([node event-type f]
+     (listen!
+      node event-type
+      (fn [e]
+        (unlisten! node event-type f)
+        (f e)))))
