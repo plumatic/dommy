@@ -3,7 +3,7 @@
    [clojure.string :as str]))
 
 (defn- class-match?
-  "does class-name string have class starting at index idx. 
+  "does class-name string have class starting at index idx.
    only will be used when node.classList doesn't exist"
   [class-name class idx]
   (and
@@ -53,7 +53,7 @@
     (let [class-len (.-length class-name)]
       (if-let [i (class-index class-name class)]
         (recur (let [end (+ i (.-length class))]
-                 (str (if (< end class-len)                        
+                 (str (if (< end class-len)
                         (str (.substring class-name 0 i) (.substr class-name (inc end)))
                         (.substring class-name 0 (dec i))))))
         class-name))))
