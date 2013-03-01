@@ -10,7 +10,8 @@
 (def add-class! attrs/add-class!)
 (def remove-class! attrs/remove-class!)
 (def toggle-class! attrs/toggle-class!)
-(def add-attr! attrs/add-attr!)
+(def set-attr! attrs/set-attr!)
+(def remove-attr! attrs/remove-attr!)
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
 
@@ -172,3 +173,4 @@
        (fn this-fn [e]
          (unlisten! node-sel type this-fn)
          (f e))))))
+
