@@ -205,6 +205,39 @@
     (fire! el :click)
     (is= 1 @click-cnt)))
 
+(deftest mouseenter-and-mouseleave
+  (let [greatgrandchild (node :.greatgrandchild)
+        grandchild (node [:.grandchild greatgrandchild])
+        child (node [:.child grandchild])
+        sibling (node :.sibling)
+        parent (node [:.parent child sibling])
+        counter (atom 0)
+        listener #(swap! counter inc)
+        fire!-called-listener?
+        (fn [evt-type relatedTarget]
+          (let [orig-count @counter]
+            (fire! child evt-type
+                   #(doto % (aset "relatedTarget" relatedTarget)))
+            (is (some #(= @counter (% orig-count)) [identity inc]))
+            (= @counter (inc orig-count))))
+        should-call-listener {"outside" nil
+                              "sibling" sibling
+                              "parent" parent}
+        shouldnt-call-listener {"grandchild" grandchild
+                                "greatgrandchild" greatgrandchild}]
+    (doseq [[fake-evt real-evt] {:mouseenter :mouseover, :mouseleave :mouseout}]
+      (dommy/listen! child fake-evt listener)
+      (doseq [[where relatedTarget] should-call-listener]
+        (is (fire!-called-listener? real-evt relatedTarget)
+            (format "%s to/from %s is %s" (name real-evt) where (name fake-evt))))
+      (doseq [[where relatedTarget] shouldnt-call-listener]
+        (is (not (fire!-called-listener? real-evt relatedTarget))
+            (format "%s to/from %s isn't %s" (name real-evt) where (name fake-evt))))
+      (dommy/unlisten! child fake-evt listener)
+      (doseq [[where relatedTarget] (concat should-call-listener shouldnt-call-listener)]
+        (is (not (fire!-called-listener? real-evt relatedTarget))
+            "after unlisten!-ed, listener never called")))))
+
 (deftest toggle!
   (let [el-simple (node [:div])]
     (is (not (dommy/hidden? el-simple)))
