@@ -161,7 +161,10 @@
             :let [keys [selector type f]
                   canonical-f (get-in (event-listeners node) keys)]]
       (update-event-listeners! node dissoc-in keys)
-      (.removeEventListener node (name type) canonical-f))))
+      (if (.-removeEventListener node)
+        (.removeEventListener node (name type) canonical-f)
+        ;; For IE < 9
+        (.detachEvent node (name type) canonical-f)))))
 
 (defn listen-once!
   [node-sel & type-fs]
