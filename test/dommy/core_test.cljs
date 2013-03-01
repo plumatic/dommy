@@ -96,15 +96,35 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
+(deftest descendant?
+  (let [grandchild (node :.grandchild)
+        child (node [:.child grandchild])
+        sibling (node :.sibling)
+        parent (node [:.parent child sibling])]
+    (doseq [contains? [true false]]
+      (when-not contains?
+        (doseq [n [grandchild child sibling parent]]
+          (set! (.-contains n) nil)))
+      (is (dommy/descendant? child parent))
+      (is (dommy/descendant? grandchild parent))
+      (is (not (dommy/descendant? parent child)))
+      (is (not (dommy/descendant? parent grandchild)))
+      (is (not (dommy/descendant? grandchild sibling)))
+      (is (not (dommy/descendant? child sibling))))))
+
 (defn fire!
-  "Only works when `node` is in the DOM"
-  [node event-type]
-  (if (.-createEvent js/document)
-    (let [event (.createEvent js/document "Event")]
-      (.initEvent event (name event-type) true true)
-      (.dispatchEvent node event))
-    (.fireEvent node (str "on" (name event-type))
-                (.createEventObject js/document))))
+  "Creates an event of type `event-type`, optionally having
+   `update-event!` mutate and return an updated event object,
+   and fires it on `node`.
+   Only works when `node` is in the DOM"
+  [node event-type & [update-event!]]
+  (let [update-event! (or update-event! identity)]
+    (if (.-createEvent js/document)
+      (let [event (.createEvent js/document "Event")]
+        (.initEvent event (name event-type) true true)
+        (.dispatchEvent node (update-event! event)))
+      (.fireEvent node (str "on" (name event-type))
+                  (update-event! (.createEventObject js/document))))))
 
 (deftest live-listener
   (let [el-nested (node [:ul])
@@ -184,6 +204,39 @@
     (is= 1 @click-cnt)
     (fire! el :click)
     (is= 1 @click-cnt)))
+
+(deftest mouseenter-and-mouseleave
+  (let [greatgrandchild (node :.greatgrandchild)
+        grandchild (node [:.grandchild greatgrandchild])
+        child (node [:.child grandchild])
+        sibling (node :.sibling)
+        parent (node [:.parent child sibling])
+        counter (atom 0)
+        listener #(swap! counter inc)
+        fire!-called-listener?
+        (fn [evt-type relatedTarget]
+          (let [orig-count @counter]
+            (fire! child evt-type
+                   #(doto % (aset "relatedTarget" relatedTarget)))
+            (is (some #(= @counter (% orig-count)) [identity inc]))
+            (= @counter (inc orig-count))))
+        should-call-listener {"outside" nil
+                              "sibling" sibling
+                              "parent" parent}
+        shouldnt-call-listener {"grandchild" grandchild
+                                "greatgrandchild" greatgrandchild}]
+    (doseq [[fake-evt real-evt] {:mouseenter :mouseover, :mouseleave :mouseout}]
+      (dommy/listen! child fake-evt listener)
+      (doseq [[where relatedTarget] should-call-listener]
+        (is (fire!-called-listener? real-evt relatedTarget)
+            (format "%s to/from %s is %s" (name real-evt) where (name fake-evt))))
+      (doseq [[where relatedTarget] shouldnt-call-listener]
+        (is (not (fire!-called-listener? real-evt relatedTarget))
+            (format "%s to/from %s isn't %s" (name real-evt) where (name fake-evt))))
+      (dommy/unlisten! child fake-evt listener)
+      (doseq [[where relatedTarget] (concat should-call-listener shouldnt-call-listener)]
+        (is (not (fire!-called-listener? real-evt relatedTarget))
+            "after unlisten!-ed, listener never called")))))
 
 (deftest toggle!
   (let [el-simple (node [:div])]
