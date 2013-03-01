@@ -85,15 +85,29 @@
        (map (fn [[k v]] (str (name k) ":" (name v) ";")))
        (str/join " ")))
 
-(defn add-attr!
+(defn set-attr!
   "can have a seq for :classes key or a map for :style"
-  [node k v]
-  (when v 
-    (case k
-      :class (node v)
-      :classes (doseq [c v] (add-class! node c))
-      :style (.setAttribute node (name k) (style-str v))
-      (.setAttribute node (name k) v))))
+  ([node k] (set-attr! node k "true"))
+  ([node k v]
+     (when v
+       (.setAttribute
+        node (name k)
+        (if (identical? k :style)
+          (style-str v)
+          v))))
+  ([node k v & kvs]
+     (assert (even? (count kvs)))
+     (doseq [[k v] (-> kvs (partition 2) (cons [k v]))]
+       (set-attr! node k v))))
+
+(defn remove-attr!
+  ([node k]
+     (if (#{:class :classes} k)
+       (set! (.-className node) "")
+       (.removeAttribute node (name k))))
+  ([node k & ks]
+     (doseq [k (cons k ks)]
+       (remove-attr! node k))))
 
 (defn hidden? [node]
   (identical? "none" (-> node .-style .-display)))

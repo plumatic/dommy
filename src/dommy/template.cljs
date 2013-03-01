@@ -76,7 +76,10 @@
         attrs     (when (map? (second data)) (second data))
         children  (drop (if attrs 2 1) data)]
     (doseq [[k v] attrs]
-      (attrs/add-attr! n k v))
+      (case k
+        :class (attrs/add-class! n v)
+        :classes (doseq [c v] (attrs/add-class! n c))
+        (attrs/set-attr! n k v)))
     (.appendChild n (->node-like children))
     n))
 

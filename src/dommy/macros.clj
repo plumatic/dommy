@@ -69,10 +69,10 @@
        ~@(for [[k v] literal-attrs]
            (if (keyword? k)
              `(compile-add-attr! ~dom-sym ~k ~v)
-             `(dommy.attrs/add-attr! ~dom-sym ~k ~v)))
+             `(dommy.attrs/set-attr! ~dom-sym ~k ~v)))
        ~@(when var-attrs
            [`(doseq [[k# v#] ~var-attrs]
-               (dommy.attrs/add-attr! ~dom-sym k# v#))])
+               (dommy.attrs/set-attr! ~dom-sym k# v#))])
        ~@(for [c children]
            `(.appendChild ~dom-sym (node ~c))) 
        ~dom-sym)))
