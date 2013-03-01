@@ -85,6 +85,12 @@
        (map (fn [[k v]] (str (name k) ":" (name v) ";")))
        (str/join " ")))
 
+(defn set-style! [node & kvs]
+  (assert (even? (count kvs)))
+  (let [style (.-style node)]
+    (doseq [[k v] (partition 2 kvs)]
+      (aset style (name k) v))))
+
 (defn set-attr!
   "can have a seq for :classes key or a map for :style"
   ([node k] (set-attr! node k "true"))

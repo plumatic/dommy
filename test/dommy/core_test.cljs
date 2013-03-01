@@ -225,6 +225,13 @@
     (dommy/toggle! el-simple true)
     (is (not (dommy/hidden? el-simple)))))
 
+(deftest set-style!
+  (let [el (node [:div])]
+    (dommy/set-style! el :height "0px" :width "1px" :zIndex 1)
+    (is= (-> el .-style .-height) "0px")
+    (is= (-> el .-style .-width) "1px")
+    (is= (-> el .-style .-zIndex) "1")))
+
 (deftest ->Array
   (let [array (dommy/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
     (is (instance? js/Array array))
