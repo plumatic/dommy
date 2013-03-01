@@ -91,6 +91,9 @@
     (doseq [[k v] (partition 2 kvs)]
       (aset style (name k) v))))
 
+(defn style [node k]
+  (aget (js/window.getComputedStyle node) (name k)))
+
 (defn set-attr!
   "can have a seq for :classes key or a map for :style"
   ([node k] (set-attr! node k "true"))

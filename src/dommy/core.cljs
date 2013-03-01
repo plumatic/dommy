@@ -12,6 +12,7 @@
 (def toggle-class! attrs/toggle-class!)
 (def set-attr! attrs/set-attr!)
 (def set-style! attrs/set-style!)
+(def style attrs/style)
 (def remove-attr! attrs/remove-attr!)
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
