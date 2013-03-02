@@ -20,7 +20,7 @@
              :compiler {:output-to "target/main.js"
                         :optimizations :whitespace
                         :pretty-print true}}
-      :test {:source-paths ["test"]
+      :test {:source-paths ["src" "test"]
              :compiler {:output-to "target/unit-test.js"
                         :optimizations :whitespace
                         :pretty-print true}}}
