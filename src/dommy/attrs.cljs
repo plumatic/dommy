@@ -46,7 +46,8 @@
         (set! (.-className node)
               (if (identical? class-name "")
                 class
-                (str class-name " " class)))))))
+                (str class-name " " class))))))
+  node)
 
 (defn- remove-class-str [init-class-name class]
   (loop [class-name init-class-name]
@@ -103,20 +104,24 @@
         node (name k)
         (if (identical? k :style)
           (style-str v)
-          v))))
+          v)))
+     node)
   ([node k v & kvs]
      (assert (even? (count kvs)))
-     (doseq [[k v] (-> kvs (partition 2) (cons [k v]))]
-       (set-attr! node k v))))
+     (doseq [[k v] (->> kvs (partition 2) (cons [k v]))]
+       (set-attr! node k v))
+     node))
 
 (defn remove-attr!
   ([node k]
      (if (#{:class :classes} k)
        (set! (.-className node) "")
-       (.removeAttribute node (name k))))
+       (.removeAttribute node (name k)))
+     node)
   ([node k & ks]
      (doseq [k (cons k ks)]
-       (remove-attr! node k))))
+       (remove-attr! node k))
+     node))
 
 (defn hidden? [node]
   (identical? "none" (-> node .-style .-display)))
@@ -125,7 +130,8 @@
   "Display or hide the given `node`. Takes an optional boolean `show?`
    indicating whether to show or hide `node`."
   ([node show?]
-     (set! (-> node .-style .-display) (if show? "" "none")))
+     (set! (-> node .-style .-display) (if show? "" "none"))
+     node)
   ([node]
      (toggle! node (hidden? node))))
 
