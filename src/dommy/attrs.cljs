@@ -60,7 +60,7 @@
         class-name))))
 
 (defn remove-class!
-  "remove class from node"
+  "remove class from and returns `node`"
   [node class]
   (if-let [class-list (.-classList node)]
     (.remove  class-list class)
@@ -70,8 +70,10 @@
       (set! (.-className node) new-class-name)))))
 
 (defn toggle-class!
-  "(toggle-class! node class) will add-class! if node does not have class and remove-class! otherwise.
-   (toggle-class! node class add?) will add-class! if add? is truthy, otherwise it will remove-class!"
+  "(toggle-class! node class) will add-class! if node does not have class
+   and remove-class! otherwise.
+   (toggle-class! node class add?) will add-class! if add? is truthy,
+   otherwise it will remove-class!"
   ([node class]
      (if-let [class-list (.-classList node)]
        (.toggle class-list class)
@@ -90,13 +92,22 @@
   (assert (even? (count kvs)))
   (let [style (.-style node)]
     (doseq [[k v] (partition 2 kvs)]
-      (aset style (name k) v))))
+      (aset style (name k) v))
+    node))
 
 (defn style [node k]
   (aget (js/window.getComputedStyle node) (name k)))
 
 (defn set-attr!
-  "can have a seq for :classes key or a map for :style"
+  "Sets dom attributes on and returns `node`.
+   Attributes without values will be set to \"true\":
+
+       (set-attr! node :disabled)
+
+   With values, the function takes variadic kv pairs:
+
+       (set-attr! node :id \"some-id\"
+                       :name \"some-name\")"
   ([node k] (set-attr! node k "true"))
   ([node k v]
      (when v

@@ -65,14 +65,14 @@
     actual-node))
 
 (defn replace!
-  "replace node with new, return new"
+  "replace `node` with new (made from `data`), return new"
   [node data]
   (let [new (template/->node-like data)]
     (.replaceChild (.-parentNode node) new node)
     new))
 
 (defn remove!
-  "remove node from parent, return parent"
+  "remove `node` from parent, return parent"
   [node]
   (let [parent (.-parentNode node)]
     (.removeChild parent node)
@@ -99,7 +99,7 @@
      (closest js/document node selector)))
 
 (defn live-listener
-    "fires f if event.target is found within the specified selector"
+    "fires f if event.target is found with `selector`"
     [node selector f]
     (fn [event]
       (when-let [selected-target (closest node (.-target event) selector)]
