@@ -163,10 +163,10 @@
     (doseq [[orig-type f] (partition 2 type-fs)
             [actual-type factory] (get special-listener-makers orig-type {orig-type identity})
             :let [canonical-f (-> f
+                                  factory
                                   ((if selector
                                      (partial live-listener node selector)
-                                     identity))
-                                  factory)]]
+                                     identity)))]]
       (update-event-listeners! node assoc-in [selector actual-type f] canonical-f)
       (if (.-addEventListener node)
         (.addEventListener node (name actual-type) canonical-f)
