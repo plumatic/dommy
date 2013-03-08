@@ -254,7 +254,8 @@
           (let [orig-count @counter]
             (fire! child evt-type
                    #(doto % (aset "relatedTarget" relatedTarget)))
-            (is (some #(= @counter (% orig-count)) [identity inc]))
+            (is (some #(= @counter (% orig-count)) [identity inc])
+                "counter value is valid (just being defensive)")
             (= @counter (inc orig-count))))
         should-call-listener {"outside" nil
                               "sibling" sibling
@@ -262,15 +263,16 @@
         shouldnt-call-listener {"grandchild" grandchild
                                 "greatgrandchild" greatgrandchild}]
     (dommy/append! js/document.body parent)
-    (doseq [[fake-evt real-evt] {:mouseenter :mouseover, :mouseleave :mouseout}]
-      (dommy/listen! child fake-evt listener)
+    (doseq [[fake-evt real-evt] {:mouseenter :mouseover, :mouseleave :mouseout}
+            node-sel [child [parent :.child]]]
+      (dommy/listen! node-sel fake-evt listener)
       (doseq [[where relatedTarget] should-call-listener]
         (is (fire!-called-listener? real-evt relatedTarget)
             (format "%s to/from %s is %s" (name real-evt) where (name fake-evt))))
       (doseq [[where relatedTarget] shouldnt-call-listener]
         (is (not (fire!-called-listener? real-evt relatedTarget))
             (format "%s to/from %s isn't %s" (name real-evt) where (name fake-evt))))
-      (dommy/unlisten! child fake-evt listener)
+      (dommy/unlisten! node-sel fake-evt listener)
       (doseq [[where relatedTarget] (concat should-call-listener shouldnt-call-listener)]
         (is (not (fire!-called-listener? real-evt relatedTarget))
             "after unlisten!-ed, listener never called")))))
