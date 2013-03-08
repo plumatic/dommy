@@ -131,6 +131,7 @@
 (deftest listener-simple
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
+    (dommy/append! js/document.body el-simple)
     (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
     (is= 0 @click-cnt)
     (fire! el-simple :click)
