@@ -98,6 +98,32 @@
   ([node selector]
      (closest js/document node selector)))
 
+(defn descendant?
+  "is `descendant` a descendant of `ancestor`?"
+  [descendant ancestor]
+  ;; http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html
+  (cond (.-contains ancestor)
+          (.contains ancestor descendant)
+        (.-compareDocumentPosition ancestor)
+          (-> (.compareDocumentPosition ancestor descendant)
+              (bit-test 4))))
+
+(def special-listener-makers
+  (->> {:mouseenter :mouseover
+        :mouseleave :mouseout}
+       (map (fn [[special-mouse-event real-mouse-event]]
+              [special-mouse-event
+               {real-mouse-event
+                (fn [f]
+                  (fn [event]
+                    (let [related-target (.-relatedTarget event)
+                          listener-target (or (.-selectedTarget event)
+                                              (.-currentTarget event))]
+                      (when-not (and related-target
+                                     (descendant? related-target listener-target))
+                        (f event)))))}]))
+       (into {})))
+
 (defn live-listener
     "fires f if event.target is found with `selector`"
     [node selector f]
@@ -150,13 +176,14 @@
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
   (let [[node selector] (node-and-selector node-sel)]
-    (doseq [[type f] (partition 2 type-fs)
-            :let [canonical-f (if-not selector f (live-listener node selector f))]]
-      (update-event-listeners! node assoc-in [selector type f] canonical-f)
+    (doseq [[orig-type f] (partition 2 type-fs)
+            [actual-type factory] (get special-listener-makers orig-type {orig-type identity})
+            :let [canonical-f (factory (if-not selector f (live-listener node selector f)))]]
+      (update-event-listeners! node assoc-in [selector actual-type f] canonical-f)
       (if (.-addEventListener node)
-        (.addEventListener node (name type) canonical-f)
+        (.addEventListener node (name actual-type) canonical-f)
         ;; For IE < 9
-        (.attachEvent node (name type) canonical-f)))))
+        (.attachEvent node (name actual-type) canonical-f)))))
 
 (defn unlisten!
   "Removes event listener for the node defined in `node-sel`,
@@ -173,11 +200,15 @@
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
   (let [[node selector] (node-and-selector node-sel)]
-    (doseq [[type f] (partition 2 type-fs)
-            :let [keys [selector type f]
+    (doseq [[orig-type f] (partition 2 type-fs)
+            [actual-type _] (get special-listener-makers orig-type {orig-type identity})
+            :let [keys [selector actual-type f]
                   canonical-f (get-in (event-listeners node) keys)]]
       (update-event-listeners! node dissoc-in keys)
-      (.removeEventListener node (name type) canonical-f))))
+      (if (.-removeEventListener node)
+        (.removeEventListener node (name actual-type) canonical-f)
+        ;; For IE < 9
+        (.detachEvent node (name actual-type) canonical-f)))))
 
 (defn listen-once!
   [node-sel & type-fs]
