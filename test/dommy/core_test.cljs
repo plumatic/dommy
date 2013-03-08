@@ -222,7 +222,8 @@
           (let [orig-count @counter]
             (fire! child evt-type
                    #(doto % (aset "relatedTarget" relatedTarget)))
-            (is (some #(= @counter (% orig-count)) [identity inc]))
+            (is (some #(= @counter (% orig-count)) [identity inc])
+                "counter value is valid (just being defensive)")
             (= @counter (inc orig-count))))
         should-call-listener {"outside" nil
                               "sibling" sibling
