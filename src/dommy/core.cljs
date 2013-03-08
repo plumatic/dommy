@@ -162,7 +162,11 @@
   (let [[node selector] (node-and-selector node-sel)]
     (doseq [[orig-type f] (partition 2 type-fs)
             [actual-type factory] (get special-listener-makers orig-type {orig-type identity})
-            :let [canonical-f (factory (if-not selector f (live-listener node selector f)))]]
+            :let [canonical-f (-> f
+                                  ((if selector
+                                     (partial live-listener node selector)
+                                     identity))
+                                  factory)]]
       (update-event-listeners! node assoc-in [selector actual-type f] canonical-f)
       (if (.-addEventListener node)
         (.addEventListener node (name actual-type) canonical-f)
