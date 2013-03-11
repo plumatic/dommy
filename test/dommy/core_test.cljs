@@ -128,19 +128,50 @@
       (.fireEvent node (str "on" (name event-type))
                   (update-event! (.createEventObject js/document))))))
 
-(deftest live-listener
-  (let [el-nested (node [:ul])
-        target (node [:li.class1])
-        click-cnt (atom 0)
-        listener (dommy/live-listener el-nested :li.class1 #(swap! click-cnt inc))
-        not-target (node [:li])]
+(deftest listener-simple
+  (let [el-simple (node [:div#id])
+        click-cnt (atom 0)]
+    (dommy/append! js/document.body el-simple)
+    (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
     (is= 0 @click-cnt)
-    (dommy/append! el-nested target)
-    (dommy/append! el-nested not-target)
-    (listener (js-obj "target" target))    
-    (is= 1 @click-cnt)
-    (listener (js-obj "target" not-target))    
+    (fire! el-simple :click)
     (is= 1 @click-cnt)))
+
+(deftest closest
+  (let [parent (node [:.parent [:.child [:.grandchild]]])
+        child (sel1 parent :.child)
+        grandchild (sel1 parent :.grandchild)]
+    (is= grandchild (dommy/closest parent grandchild :.grandchild))
+    (is= child (dommy/closest parent grandchild :.child))
+    (is (nil? (dommy/closest parent grandchild :.parent)))
+    (dommy/append! js/document.body parent)
+    (is= parent (dommy/closest grandchild :.parent))))
+
+(deftest live-listener
+  (let [parent (node [:.parent [:.child [:.grandchild]]])
+        child (sel1 parent :.child)
+        grandchild (sel1 parent :.grandchild)
+        click-cnt (atom 0)
+        fake-event (js-obj "target" grandchild)]
+    ((dommy/live-listener
+      parent :.grandchild
+      (fn [event]
+        (swap! click-cnt inc)
+        (is= grandchild (.-selectedTarget event))))
+     fake-event)
+    (is= 1 @click-cnt)
+    ((dommy/live-listener
+      parent :.child
+      (fn [event]
+        (swap! click-cnt inc)
+        (is= child (.-selectedTarget event))))
+     fake-event)
+    (is= 2 @click-cnt)
+    ((dommy/live-listener
+      parent :.parent
+      #(swap! click-cnt inc))
+     fake-event)
+    (is= 2 @click-cnt)))
 
 (deftest listen!
   (let [el-simple (node [:div#id])
@@ -256,6 +287,13 @@
     (dommy/toggle! el-simple true)
     (is (not (dommy/hidden? el-simple)))))
 
+(deftest set-style!
+  (let [el (node [:div])]
+    (dommy/set-style! el :height "0px" :width "1px" :zIndex 1)
+    (is= (-> el .-style .-height) "0px")
+    (is= (-> el .-style .-width) "1px")
+    (is= (-> el .-style .-zIndex) "1")))
+
 (deftest ->Array
   (let [array (dommy/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
     (is (instance? js/Array array))
@@ -266,7 +304,7 @@
 ;; Performance test to run in browser
 
 (defn class-perf-test [node]
-  (let [start (.now js/Date)]        
+  (let [start (.now js/Date)]
     (dotimes [i 1e6]
       (dommy/has-class? node (str "class" (inc (mod i 10))))
       (dommy/toggle-class! node (str "class" (inc (mod i 10)))))
@@ -274,7 +312,7 @@
 
 (defn jquery-perf-test [node]
   (let [node (js/jQuery node)
-        start (.now js/Date)]        
+        start (.now js/Date)]
     (dotimes [i 1e6]
       (.hasClass node (str "class" (inc (mod i 10))))
       (.toggleClass node (str "class" (inc (mod i 10)))))
