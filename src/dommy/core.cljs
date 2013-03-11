@@ -11,6 +11,8 @@
 (def remove-class! attrs/remove-class!)
 (def toggle-class! attrs/toggle-class!)
 (def set-attr! attrs/set-attr!)
+(def set-style! attrs/set-style!)
+(def style attrs/style)
 (def remove-attr! attrs/remove-attr!)
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
@@ -63,14 +65,14 @@
     actual-node))
 
 (defn replace!
-  "replace node with new, return new"
+  "replace `node` with new (made from `data`), return new"
   [node data]
   (let [new (template/->node-like data)]
     (.replaceChild (.-parentNode node) new node)
     new))
 
 (defn remove!
-  "remove node from parent, return parent"
+  "remove `node` from parent, return parent"
   [node]
   (let [parent (.-parentNode node)]
     (.removeChild parent node)
@@ -80,6 +82,21 @@
   (cond
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
+
+(defn closest
+  "closest ancestor of `node` (up to `base`, if provided)
+   that matches `selector`"
+  ([base node selector]
+     (let [matches (sel base selector)]
+       (loop [ancestor node]
+         (when (not= base ancestor)
+           (if (-> matches
+                   (.indexOf ancestor)
+                   (>= 0))
+             ancestor
+             (recur (.-parentNode ancestor)))))))
+  ([node selector]
+     (closest js/document node selector)))
 
 (defn descendant?
   "is `descendant` a descendant of `ancestor`?"
@@ -108,13 +125,12 @@
        (into {})))
 
 (defn live-listener
-    "fires f if event.target is found within the specified selector"
+    "fires f if event.target is found with `selector`"
     [node selector f]
-    (fn [e]
-      (when (-> (sel node selector)
-                (.indexOf (.-target e))
-                (>= 0))
-        (f e))))
+    (fn [event]
+      (when-let [selected-target (closest node (.-target event) selector)]
+        (set! (.-selectedTarget event) selected-target)
+        (f event))))
 
 (defn- event-listeners
   "Returns a nested map of event listeners on `nodes`"
@@ -179,7 +195,7 @@
 
   The following forms are allowed, and will remove all handlers
   that match the parameters passed in:
-  
+
       (unlisten! [node :.selector] :click event-listener)
 
       (unlisten! [node :.selector]
