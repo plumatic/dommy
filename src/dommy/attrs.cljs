@@ -85,6 +85,17 @@
        (map (fn [[k v]] (str (name k) ":" (name v) ";")))
        (str/join " ")))
 
+(defn set-style! [node & kvs]
+  (assert (even? (count kvs)))
+  (let [style (.-style node)]
+    (doseq [[k v] (partition 2 kvs)]
+      (aset style (name k) v))
+    node))
+
+(defn style [node k]
+  (when k
+    (aget (js/window.getComputedStyle node) (name k))))
+
 (defn set-attr!
   "can have a seq for :classes key or a map for :style"
   ([node k] (set-attr! node k "true"))
@@ -108,6 +119,10 @@
   ([node k & ks]
      (doseq [k (cons k ks)]
        (remove-attr! node k))))
+
+(defn attr [node k]
+  (when k
+    (.getAttribute node (name k))))
 
 (defn hidden? [node]
   (identical? "none" (-> node .-style .-display)))

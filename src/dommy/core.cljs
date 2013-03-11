@@ -10,8 +10,11 @@
 (def add-class! attrs/add-class!)
 (def remove-class! attrs/remove-class!)
 (def toggle-class! attrs/toggle-class!)
+(def set-style! attrs/set-style!)
+(def style attrs/style)
 (def set-attr! attrs/set-attr!)
 (def remove-attr! attrs/remove-attr!)
+(def attr attrs/attr)
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
 
