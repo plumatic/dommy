@@ -147,7 +147,7 @@
     (is= [parent js/document.body js/document.documentElement js/document]
          (dommy/ancestor-nodes parent))))
 
-(deftest closest
+(deftest closest-and-matches-pred
   (let [parent (node [:.parent [:.child [:.grandchild]]])
         child (sel1 parent :.child)
         grandchild (sel1 parent :.grandchild)]
