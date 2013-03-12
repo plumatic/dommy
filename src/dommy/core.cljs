@@ -83,6 +83,13 @@
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
 
+(defn ancestor-nodes
+  "a lazy seq of the ancestors of `node`"
+  [node]
+  (->> node
+       (iterate #(.-parentNode %))
+       (take-while identity)))
+
 (defn closest
   "closest ancestor of `node` (up to `base`, if provided)
    that matches `selector`"
