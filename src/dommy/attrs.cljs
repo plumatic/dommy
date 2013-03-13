@@ -96,7 +96,8 @@
     node))
 
 (defn style [node k]
-  (aget (js/window.getComputedStyle node) (name k)))
+  (when k
+    (aget (js/window.getComputedStyle node) (name k))))
 
 (defn set-attr!
   "Sets dom attributes on and returns `node`.
@@ -133,6 +134,10 @@
      (doseq [k (cons k ks)]
        (remove-attr! node k))
      node))
+
+(defn attr [node k]
+  (when k
+    (.getAttribute node (name k))))
 
 (defn hidden? [node]
   (identical? "none" (-> node .-style .-display)))
