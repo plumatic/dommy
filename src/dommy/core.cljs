@@ -86,20 +86,34 @@
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
 
+(defn ancestor-nodes
+  "a lazy seq of the ancestors of `node`"
+  [node]
+  (->> node
+       (iterate #(.-parentNode %))
+       (take-while identity)))
+
+(defn matches-pred
+  "returns a predicate on nodes that match `selector` at the
+   time of this `matches-pred` call (may return outdated results
+   if you fuck with the DOM)"
+  ([base selector]
+   (let [matches (sel base selector)]
+     (fn [node]
+       (-> matches (.indexOf node) (>= 0)))))
+  ([selector]
+   (matches-pred js/document selector)))
+
 (defn closest
   "closest ancestor of `node` (up to `base`, if provided)
    that matches `selector`"
   ([base node selector]
-     (let [matches (sel base selector)]
-       (loop [ancestor node]
-         (when (not= base ancestor)
-           (if (-> matches
-                   (.indexOf ancestor)
-                   (>= 0))
-             ancestor
-             (recur (.-parentNode ancestor)))))))
+     (->> (ancestor-nodes node)
+          (take-while #(not (identical? % base)))
+          (filter (matches-pred base selector))
+          first))
   ([node selector]
-     (closest js/document node selector)))
+     (first (filter (matches-pred selector) (ancestor-nodes node)))))
 
 (defn descendant?
   "is `descendant` a descendant of `ancestor`?"

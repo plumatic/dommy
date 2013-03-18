@@ -137,7 +137,17 @@
     (fire! el-simple :click)
     (is= 1 @click-cnt)))
 
-(deftest closest
+(deftest ancestor-nodes
+  (let [parent (node [:.parent [:.child [:.grandchild]]])
+        child (sel1 parent :.child)
+        grandchild (sel1 parent :.grandchild)]
+    (is= [grandchild child parent] (dommy/ancestor-nodes grandchild))
+    (is= [parent] (dommy/ancestor-nodes parent))
+    (dommy/append! js/document.body parent)
+    (is= [parent js/document.body js/document.documentElement js/document]
+         (dommy/ancestor-nodes parent))))
+
+(deftest closest-and-matches-pred
   (let [parent (node [:.parent [:.child [:.grandchild]]])
         child (sel1 parent :.child)
         grandchild (sel1 parent :.grandchild)]

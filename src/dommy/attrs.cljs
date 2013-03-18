@@ -33,8 +33,9 @@
   [node class]
   (if-let [class-list (.-classList node)]
     (.contains class-list class)
-    (when-let [i (class-index (.-className node) class)]
-      (>= i 0))))
+    (when-let [class-name (.-className node)]
+      (when-let [i (class-index class-name class)]
+        (>= i 0)))))
 
 (defn add-class!
   "add class to node"
