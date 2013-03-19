@@ -24,25 +24,25 @@
   ([data]
      `(sel1 js/document ~data)))
 
-(defmacro sel 
+(defmacro sel
   ([base data]
      `(dommy.core/->Array
        (.querySelectorAll ~base ~(selector-form data))))
   ([data]
      `(sel js/document ~data)))
 
-(defmacro compile-add-attr! 
+(defmacro compile-add-attr!
   "compile-time add attribute"
-  [d k v]  
-  (assert (keyword? k))  
+  [d k v]
+  (assert (keyword? k))
   `(when ~v
      ~(cond
        (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
-       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.attrs/style-str ~v))
+       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.core/style-str ~v))
        (identical? k :classes) `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
        :else `(.setAttribute ~d ~(name k) ~v))))
 
-(defn parse-keyword 
+(defn parse-keyword
   "return pair [tag class-str id] where tag is dom tag and attrs
    are key-value attribute pairs from css-style dom selector"
   [node-key]
@@ -59,7 +59,7 @@
         var-attrs (when (and (not literal-attrs) (-> rest first meta :attrs))
                     (first rest))
         children (drop (if (or literal-attrs var-attrs) 1 0) rest)
-        [tag class-str id] (parse-keyword node-key)        
+        [tag class-str id] (parse-keyword node-key)
         dom-sym (gensym "dom")]
     `(let [~dom-sym (.createElement js/document ~(name tag))]
        ~@(when-not (empty? class-str)
@@ -69,16 +69,16 @@
        ~@(for [[k v] literal-attrs]
            (if (keyword? k)
              `(compile-add-attr! ~dom-sym ~k ~v)
-             `(dommy.attrs/set-attr! ~dom-sym ~k ~v)))
+             `(dommy.core/set-attr! ~dom-sym ~k ~v)))
        ~@(when var-attrs
            [`(doseq [[k# v#] ~var-attrs]
-               (dommy.attrs/set-attr! ~dom-sym k# v#))])
+               (dommy.core/set-attr! ~dom-sym k# v#))])
        ~@(for [c children]
-           `(.appendChild ~dom-sym (node ~c))) 
+           `(.appendChild ~dom-sym (node ~c)))
        ~dom-sym)))
 
 (defmacro node [data]
-  (cond 
+  (cond
     (vector? data) `(compile-compound ~data)
     (keyword? data) `(compile-compound [~data])
     (or (string? data) (:text (meta data))) `(.createTextNode js/document ~data)
