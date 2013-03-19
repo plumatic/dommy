@@ -14,6 +14,8 @@
 (def style attrs/style)
 (def set-attr! attrs/set-attr!)
 (def set-style! attrs/set-style!)
+(def set-px! attrs/set-px!)
+(def px attrs/px)
 (def style-str attrs/style-str)
 (def style attrs/style)
 (def remove-attr! attrs/remove-attr!)

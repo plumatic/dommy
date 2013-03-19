@@ -97,8 +97,16 @@
     node))
 
 (defn style [node k]
-  (when k
-    (aget (js/window.getComputedStyle node) (name k))))
+  (assert k)
+  (aget (js/window.getComputedStyle node) (name k)))
+
+(defn set-px! [node & kvs]
+  (assert (even? (count kvs)))
+  (doseq [[k v] (partition 2 kvs)]
+    (set-style! node k (str v "px"))))
+
+(defn px [node k]
+  (js/parseInt (style node k)))
 
 (defn set-attr!
   "Sets dom attributes on and returns `node`.

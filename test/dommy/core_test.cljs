@@ -299,10 +299,30 @@
 
 (deftest set-style!
   (let [el (node [:div])]
-    (dommy/set-style! el :height "0px" :width "1px" :zIndex 1)
+    (dommy/set-style! el :height "0px" :width "1px" :z-index 1)
     (is= (-> el .-style .-height) "0px")
     (is= (-> el .-style .-width) "1px")
     (is= (-> el .-style .-zIndex) "1")))
+
+(deftest style
+  (let [el (node [:div])]
+    (dommy/prepend! js/document.body el)
+    (dommy/set-style! el :height "0px" :orphans 666)
+    (is= (dommy/style el :height) "0px")
+    (is= (dommy/style el :orphans) "666")))
+
+(deftest set-px!
+  (let [el (node [:div])]
+    (dommy/set-px! el :height 0 :width 1)
+    (is= (-> el .-style .-height) "0px")
+    (is= (-> el .-style .-width) "1px")))
+
+(deftest px
+  (let [el (node [:div])]
+    (dommy/prepend! js/document.body el)
+    (dommy/set-style! el :height "0px" :width "1px")
+    (is= (dommy/px el :height) 0)
+    (is= (dommy/px el :width) 1)))
 
 (deftest ->Array
   (let [array (dommy/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
