@@ -107,7 +107,9 @@
     (set-style! node k (str v "px"))))
 
 (defn px [node k]
-  (js/parseInt (style node k)))
+  (let [pixels (style node k)]
+    (when (seq pixels)
+      (js/parseInt pixels))))
 
 (defn set-attr!
   "Sets dom attributes on and returns `node`.
