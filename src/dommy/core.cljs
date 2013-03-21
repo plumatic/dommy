@@ -77,6 +77,11 @@
     (.replaceChild (.-parentNode node) new node)
     new))
 
+(defn replace-contents!
+  [parent node-like]
+  (set! (.-innerHTML parent) "")
+  (append! parent node-like))
+
 (defn remove!
   "remove `node` from parent, return parent"
   [node]
