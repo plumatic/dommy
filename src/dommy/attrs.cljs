@@ -68,7 +68,8 @@
     (let [class-name (.-className node)
           new-class-name (remove-class-str class-name (name class))]
     (when-not (identical? class-name new-class-name)
-      (set! (.-className node) new-class-name)))))
+      (set! (.-className node) new-class-name))))
+  node)
 
 (defn toggle-class!
   "(toggle-class! node class) will add-class! if node does not have class
