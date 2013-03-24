@@ -154,5 +154,13 @@
 (deftemplate nil-template []
   nil)
 
+(deftest nil-in-template
+  (is= "<span></span>"
+       (.-outerHTML (template/node [:span nil])))
+  (is= "<ul><li>0</li><li>2</li></ul>"
+       (.-outerHTML (template/node [:ul (for [i (range 3)]
+                                          (when (even? i)
+                                            [:li i]))]))))
+
 (deftest nil-template-test
   (is= 0 (-> (nil-template) .-childNodes .-length)))
