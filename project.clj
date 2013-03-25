@@ -13,7 +13,7 @@
   :plugins [[lein-cljsbuild "0.3.0"]]
   :hooks [leiningen.cljsbuild]
   :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
-                 [prismatic/cljs-test "0.0.4"]]
+                 [prismatic/cljs-test "0.0.5"]]
   :cljsbuild 
     {:builds 
      {:dev  {:source-paths ["src"]
