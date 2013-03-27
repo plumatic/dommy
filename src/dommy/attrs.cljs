@@ -1,4 +1,6 @@
 (ns dommy.attrs
+  (:require-macros
+    [dommy.macros :as macros])
   (:require
    [clojure.string :as str]))
 
@@ -31,24 +33,26 @@
   "Does DOM node have class. Uses node.classList if available
    and otherwise does fast parse of className string"
   [node class]
-  (if-let [class-list (.-classList node)]
-    (.contains class-list class)
-    (when-let [class-name (.-className node)]
-      (when-let [i (class-index class-name class)]
-        (>= i 0)))))
+  (let [node (macros/node node)]
+    (if-let [class-list (.-classList node)]
+      (.contains class-list class)
+      (when-let [class-name (.-className node)]
+        (when-let [i (class-index class-name class)]
+          (>= i 0))))))
 
 (defn add-class!
   "add class to node"
   [node class]
-  (if-let [class-list (.-classList node)]
-    (.add class-list class)
-    (let [class-name (.-className node)]
-      (when-not (class-index class-name class)
-        (set! (.-className node)
-              (if (identical? class-name "")
-                class
-                (str class-name " " class))))))
-  node)
+  (let [node (macros/node node)]
+    (if-let [class-list (.-classList node)]
+      (.add class-list class)
+      (let [class-name (.-className node)]
+        (when-not (class-index class-name class)
+          (set! (.-className node)
+                (if (identical? class-name "")
+                  class
+                  (str class-name " " class))))))
+    node))
 
 (defn- remove-class-str [init-class-name class]
   (loop [class-name init-class-name]
@@ -63,13 +67,14 @@
 (defn remove-class!
   "remove class from and returns `node`"
   [node class]
-  (if-let [class-list (.-classList node)]
-    (.remove  class-list class)
-    (let [class-name (.-className node)
-          new-class-name (remove-class-str class-name (name class))]
-    (when-not (identical? class-name new-class-name)
-      (set! (.-className node) new-class-name))))
-  node)
+  (let [node (macros/node node)]
+    (if-let [class-list (.-classList node)]
+      (.remove  class-list class)
+      (let [class-name (.-className node)
+            new-class-name (remove-class-str class-name (name class))]
+        (when-not (identical? class-name new-class-name)
+          (set! (.-className node) new-class-name))))
+    node))
 
 (defn toggle-class!
   "(toggle-class! node class) will add-class! if node does not have class
@@ -77,13 +82,17 @@
    (toggle-class! node class add?) will add-class! if add? is truthy,
    otherwise it will remove-class!"
   ([node class]
+   (let [node (macros/node node)]
      (if-let [class-list (.-classList node)]
        (.toggle class-list class)
-       (toggle-class! node class (not (has-class? node class)))))
+       (toggle-class! node class (not (has-class? node class))))
+     node))
   ([node class add?]
+   (let [node (macros/node node)]
      (if add?
        (add-class! node class)
-       (remove-class! node class))))
+       (remove-class! node class))
+     node)))
 
 (defn- style-str [m]
   (->> m
@@ -92,22 +101,25 @@
 
 (defn set-style! [node & kvs]
   (assert (even? (count kvs)))
-  (let [style (.-style node)]
+  (let [node (macros/node node)
+        style (.-style node)]
     (doseq [[k v] (partition 2 kvs)]
       (aset style (name k) v))
     node))
 
 (defn style [node k]
   (assert k)
-  (aget (js/window.getComputedStyle node) (name k)))
+  (aget (js/window.getComputedStyle (macros/node node)) (name k)))
 
 (defn set-px! [node & kvs]
   (assert (even? (count kvs)))
-  (doseq [[k v] (partition 2 kvs)]
-    (set-style! node k (str v "px"))))
+  (let [node (macros/node node)]
+    (doseq [[k v] (partition 2 kvs)]
+      (set-style! node k (str v "px")))
+    node))
 
 (defn px [node k]
-  (let [pixels (style node k)]
+  (let [pixels (style (macros/node node) k)]
     (when (seq pixels)
       (js/parseInt pixels))))
 
@@ -121,45 +133,49 @@
 
        (set-attr! node :id \"some-id\"
                        :name \"some-name\")"
-  ([node k] (set-attr! node k "true"))
+  ([node k] (set-attr! (macros/node node) k "true"))
   ([node k v]
-     (when v
+   (when v
+     (doto (macros/node node)
        (.setAttribute
-        node (name k)
-        (if (identical? k :style)
-          (style-str v)
-          v)))
-     node)
+         (name k)
+         (if (identical? k :style)
+           (style-str v)
+           v)))))
   ([node k v & kvs]
-     (assert (even? (count kvs)))
+   (assert (even? (count kvs)))
+   (let [node (macros/node node)]
      (doseq [[k v] (->> kvs (partition 2) (cons [k v]))]
        (set-attr! node k v))
-     node))
+     node)))
 
 (defn remove-attr!
   ([node k]
+   (let [node (macros/node node)]
      (if (#{:class :classes} k)
        (set! (.-className node) "")
        (.removeAttribute node (name k)))
-     node)
+     node))
   ([node k & ks]
+   (let [node (macros/node node)]
      (doseq [k (cons k ks)]
        (remove-attr! node k))
-     node))
+     node)))
 
 (defn attr [node k]
   (when k
-    (.getAttribute node (name k))))
+    (.getAttribute (macros/node node) (name k))))
 
 (defn hidden? [node]
-  (identical? "none" (-> node .-style .-display)))
+  (identical? "none" (-> (macros/node node) .-style .-display)))
 
 (defn toggle!
   "Display or hide the given `node`. Takes an optional boolean `show?`
    indicating whether to show or hide `node`."
   ([node show?]
-     (set! (-> node .-style .-display) (if show? "" "none"))
-     node)
+   (doto (macros/node node)
+     (-> .-style .-display (set! (if show? "" "none")))))
   ([node]
-     (toggle! node (hidden? node))))
-
+   (let [node (macros/node node)]
+     (toggle! node (hidden? node))
+     node)))
