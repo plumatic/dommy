@@ -14,13 +14,14 @@
   :hooks [leiningen.cljsbuild]
   :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
                  [prismatic/cljs-test "0.0.5"]]
-  :cljsbuild 
-    {:builds 
+  :cljsbuild
+    {:builds
      {:dev  {:source-paths ["src"]
              :compiler {:output-to "target/main.js"
                         :optimizations :whitespace
                         :pretty-print true}}
       :test {:source-paths ["src" "test"]
+             :incremental true
              :compiler {:output-to "target/unit-test.js"
                         :optimizations :whitespace
                         :pretty-print true}}}
