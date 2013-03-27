@@ -40,24 +40,24 @@
 
 (defn throw-unable-to-make-node [node-data]
   (throw (str "Don't know how to make node from: " (pr-str node-data))))
- 
+
 (defn ->document-fragment
   "take data and return a document fragment"
   ([data]
      (->document-fragment (.createDocumentFragment js/document) data))
   ([result-frag data]
-      (cond 
-       (satisfies? PElement data) 
+      (cond
+       (satisfies? PElement data)
        (do (.appendChild result-frag (-elem data))
            result-frag)
-       
-       (seq? data) 
+
+       (seq? data)
        (do (doseq [child data] (->document-fragment result-frag child))
            result-frag)
 
        (nil? data)
        result-frag
-       
+
        :else
        (throw-unable-to-make-node data))))
 
