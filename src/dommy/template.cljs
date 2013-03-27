@@ -93,6 +93,9 @@
   js/Text
   (-elem [this] this)
 
+  js/HTMLDocument
+  (-elem [this] this)
+
   PersistentVector
   (-elem [this] (compound-element this))
 
