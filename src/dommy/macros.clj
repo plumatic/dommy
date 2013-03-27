@@ -20,14 +20,14 @@
 
 (defmacro sel1
   ([base data]
-     `(.querySelector ~base ~(selector-form data)))
+     `(.querySelector (node ~base) ~(selector-form data)))
   ([data]
      `(sel1 js/document ~data)))
 
 (defmacro sel
   ([base data]
      `(dommy.core/->Array
-       (.querySelectorAll ~base ~(selector-form data))))
+       (.querySelectorAll (node ~base) ~(selector-form data))))
   ([data]
      `(sel js/document ~data)))
 
