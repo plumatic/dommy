@@ -54,16 +54,16 @@
 (defn insert-before!
   "insert `node` before `other`, both DOM nodes,
    `other` must have a parent. return `node`"
-  [node other]
-  (let [actual-node (template/->node-like node)]
+  (let [actual-node (template/->node-like elem)]
+  [elem other]
     (.insertBefore (.-parentNode other) actual-node other)
     actual-node))
 
 (defn insert-after!
   "insert `node` after `other`, both DOM nodes,
    `other` must have a parent. return `node`"
-  [node other]
-  (let [actual-node (template/->node-like node)
+  (let [actual-node (template/->node-like elem)
+  [elem other]
         parent (.-parentNode other)]
     (if-let [next (.-nextSibling other)]
       (.insertBefore parent actual-node next)
@@ -72,9 +72,9 @@
 
 (defn replace!
   "replace `node` with new (made from `data`), return new"
-  [node data]
+  [elem data]
   (let [new (template/->node-like data)]
-    (.replaceChild (.-parentNode node) new node)
+    (.replaceChild (.-parentNode elem) new elem)
     new))
 
 (defn replace-contents!
@@ -84,9 +84,9 @@
 
 (defn remove!
   "remove `node` from parent, return parent"
-  [node]
-  (let [parent (.-parentNode node)]
-    (.removeChild parent node)
+  [elem]
+  (let [parent (.-parentNode elem)]
+    (.removeChild parent elem)
     parent))
 
 (defn selector [data]
@@ -96,8 +96,8 @@
 
 (defn ancestor-nodes
   "a lazy seq of the ancestors of `node`"
-  [node]
-  (->> node
+  [elem]
+  (->> elem
        (iterate #(.-parentNode %))
        (take-while identity)))
 
@@ -107,21 +107,21 @@
    if you fuck with the DOM)"
   ([base selector]
    (let [matches (sel base selector)]
-     (fn [node]
-       (-> matches (.indexOf node) (>= 0)))))
+     (fn [elem]
+       (-> matches (.indexOf elem) (>= 0)))))
   ([selector]
    (matches-pred js/document selector)))
 
 (defn closest
   "closest ancestor of `node` (up to `base`, if provided)
    that matches `selector`"
-  ([base node selector]
-     (->> (ancestor-nodes node)
+  ([base elem selector]
+     (->> (ancestor-nodes elem)
           (take-while #(not (identical? % base)))
           (filter (matches-pred base selector))
           first))
-  ([node selector]
-     (first (filter (matches-pred selector) (ancestor-nodes node)))))
+  ([elem selector]
+     (first (filter (matches-pred selector) (ancestor-nodes elem)))))
 
 (defn descendant?
   "is `descendant` a descendant of `ancestor`?"
@@ -151,21 +151,21 @@
 
 (defn live-listener
     "fires f if event.target is found with `selector`"
-    [node selector f]
+    [elem selector f]
     (fn [event]
-      (when-let [selected-target (closest node (.-target event) selector)]
+      (when-let [selected-target (closest elem (.-target event) selector)]
         (set! (.-selectedTarget event) selected-target)
         (f event))))
 
 (defn- event-listeners
   "Returns a nested map of event listeners on `nodes`"
-  [node]
-  (or (.-dommyEventListeners node) {}))
+  [elem]
+  (or (.-dommyEventListeners elem) {}))
 
 (defn- update-event-listeners!
-  [node f & args]
-  (set! (.-dommyEventListeners node)
-        (apply f (event-listeners node) args)))
+  [elem f & args]
+  (set! (.-dommyEventListeners elem)
+        (apply f (event-listeners elem) args)))
 
 (defn- node-and-selector
   [node-sel]
@@ -200,19 +200,19 @@
        (listen! some-node :click click-handler :hover hover-handler)"
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
-  (let [[node selector] (node-and-selector node-sel)]
+  (let [[elem selector] (node-and-selector node-sel)]
     (doseq [[orig-type f] (partition 2 type-fs)
             [actual-type factory] (get special-listener-makers orig-type {orig-type identity})
             :let [canonical-f (-> f
                                   factory
                                   ((if selector
-                                     (partial live-listener node selector)
+                                     (partial live-listener elem selector)
                                      identity)))]]
-      (update-event-listeners! node assoc-in [selector actual-type f] canonical-f)
-      (if (.-addEventListener node)
-        (.addEventListener node (name actual-type) canonical-f)
+      (update-event-listeners! elem assoc-in [selector actual-type f] canonical-f)
+      (if (.-addEventListener elem)
+        (.addEventListener elem (name actual-type) canonical-f)
         ;; For IE < 9
-        (.attachEvent node (name actual-type) canonical-f)))))
+        (.attachEvent elem (name actual-type) canonical-f)))))
 
 (defn unlisten!
   "Removes event listener for the node defined in `node-sel`,
@@ -228,25 +228,24 @@
         :mouseover other-event-listener)"
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
-  (let [[node selector] (node-and-selector node-sel)]
+  (let [[elem selector] (node-and-selector node-sel)]
     (doseq [[orig-type f] (partition 2 type-fs)
             [actual-type _] (get special-listener-makers orig-type {orig-type identity})
             :let [keys [selector actual-type f]
-                  canonical-f (get-in (event-listeners node) keys)]]
-      (update-event-listeners! node dissoc-in keys)
-      (if (.-removeEventListener node)
-        (.removeEventListener node (name actual-type) canonical-f)
+                  canonical-f (get-in (event-listeners elem) keys)]]
+      (update-event-listeners! elem dissoc-in keys)
+      (if (.-removeEventListener elem)
+        (.removeEventListener elem (name actual-type) canonical-f)
         ;; For IE < 9
-        (.detachEvent node (name actual-type) canonical-f)))))
+        (.detachEvent elem (name actual-type) canonical-f)))))
 
 (defn listen-once!
   [node-sel & type-fs]
   (assert (even? (count type-fs)))
-  (let [[node selector] (node-and-selector node-sel)]
+  (let [[elem selector] (node-and-selector node-sel)]
     (doseq [[type f] (partition 2 type-fs)]
       (listen!
        node-sel type
        (fn this-fn [e]
          (unlisten! node-sel type this-fn)
          (f e))))))
-
