@@ -1,6 +1,6 @@
 (ns dommy.core
   (:use-macros
-   [dommy.macros :only [sel]])
+   [dommy.macros :only [sel node]])
   (:require
    [clojure.string :as str]
    [dommy.attrs :as attrs]
@@ -40,30 +40,31 @@
 (defn append!
   "append `child` to `parent`, both DOM nodes. return `parent`"
   [parent child]
-  (.appendChild parent (template/->node-like child))
-  parent)
+  (doto (node parent)
+    (.appendChild (template/->node-like child))))
 
 (defn prepend!
   "prepend `child` to `parent`, both DOM nodes. return `parent`"
   [parent child]
-  (.insertBefore parent
-                 (template/->node-like child)
-                 (.-firstChild parent))
-  parent)
+  (doto (node parent)
+    (.insertBefore (template/->node-like child)
+                   (.-firstChild parent))))
 
 (defn insert-before!
   "insert `node` before `other`, both DOM nodes,
    `other` must have a parent. return `node`"
-  (let [actual-node (template/->node-like elem)]
   [elem other]
+  (let [actual-node (template/->node-like elem)
+        other (node other)]
     (.insertBefore (.-parentNode other) actual-node other)
     actual-node))
 
 (defn insert-after!
   "insert `node` after `other`, both DOM nodes,
    `other` must have a parent. return `node`"
-  (let [actual-node (template/->node-like elem)
   [elem other]
+  (let [actual-node (template/->node-like elem)
+        other (node other)
         parent (.-parentNode other)]
     (if-let [next (.-nextSibling other)]
       (.insertBefore parent actual-node next)
@@ -73,21 +74,23 @@
 (defn replace!
   "replace `node` with new (made from `data`), return new"
   [elem data]
-  (let [new (template/->node-like data)]
+  (let [new (template/->node-like data)
+        elem (node elem)]
     (.replaceChild (.-parentNode elem) new elem)
     new))
 
 (defn replace-contents!
   [parent node-like]
-  (set! (.-innerHTML parent) "")
-  (append! parent node-like))
+  (doto (node parent)
+    (-> .-innerHTML (set! ""))
+    (append! node-like)))
 
 (defn remove!
   "remove `node` from parent, return parent"
   [elem]
-  (let [parent (.-parentNode elem)]
-    (.removeChild parent elem)
-    parent))
+  (let [elem (node elem)]
+    (doto (.-parentNode elem)
+      (.removeChild elem))))
 
 (defn selector [data]
   (cond
@@ -97,7 +100,7 @@
 (defn ancestor-nodes
   "a lazy seq of the ancestors of `node`"
   [elem]
-  (->> elem
+  (->> (node elem)
        (iterate #(.-parentNode %))
        (take-while identity)))
 
@@ -106,7 +109,7 @@
    time of this `matches-pred` call (may return outdated results
    if you fuck with the DOM)"
   ([base selector]
-   (let [matches (sel base selector)]
+   (let [matches (sel (node base) selector)]
      (fn [elem]
        (-> matches (.indexOf elem) (>= 0)))))
   ([selector]
@@ -116,22 +119,26 @@
   "closest ancestor of `node` (up to `base`, if provided)
    that matches `selector`"
   ([base elem selector]
+   (let [base (node base)
+         elem (node elem)]
      (->> (ancestor-nodes elem)
           (take-while #(not (identical? % base)))
           (filter (matches-pred base selector))
-          first))
+          first)))
   ([elem selector]
-     (first (filter (matches-pred selector) (ancestor-nodes elem)))))
+     (first (filter (matches-pred selector) (ancestor-nodes (node elem))))))
 
 (defn descendant?
   "is `descendant` a descendant of `ancestor`?"
   [descendant ancestor]
   ;; http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html
-  (cond (.-contains ancestor)
+  (let [descendant (node descendant)
+        ancestor (node ancestor)]
+    (cond (.-contains ancestor)
           (.contains ancestor descendant)
-        (.-compareDocumentPosition ancestor)
+          (.-compareDocumentPosition ancestor)
           (-> (.compareDocumentPosition ancestor descendant)
-              (bit-test 4))))
+              (bit-test 4)))))
 
 (def special-listener-makers
   (->> {:mouseenter :mouseover
@@ -150,28 +157,29 @@
        (into {})))
 
 (defn live-listener
-    "fires f if event.target is found with `selector`"
-    [elem selector f]
-    (fn [event]
-      (when-let [selected-target (closest elem (.-target event) selector)]
-        (set! (.-selectedTarget event) selected-target)
-        (f event))))
+  "fires f if event.target is found with `selector`"
+  [elem selector f]
+  (fn [event]
+    (when-let [selected-target (closest (node elem) (.-target event) selector)]
+      (set! (.-selectedTarget event) selected-target)
+      (f event))))
 
 (defn- event-listeners
   "Returns a nested map of event listeners on `nodes`"
   [elem]
-  (or (.-dommyEventListeners elem) {}))
+  (or (.-dommyEventListeners (node elem)) {}))
 
 (defn- update-event-listeners!
   [elem f & args]
-  (set! (.-dommyEventListeners elem)
-        (apply f (event-listeners elem) args)))
+  (let [elem (node elem)]
+    (set! (.-dommyEventListeners elem)
+          (apply f (event-listeners elem) args))))
 
 (defn- node-and-selector
   [node-sel]
   (if (sequential? node-sel)
-    ((juxt first rest) node-sel)
-    [node-sel nil]))
+    ((juxt #(node (first %)) rest) node-sel)
+    [(node node-sel) nil]))
 
 (defn listen!
   "Adds `f` as a listener for events of type `event-type` on
