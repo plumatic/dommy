@@ -21,7 +21,7 @@
                         :optimizations :whitespace
                         :pretty-print true}}
       :test {:source-paths ["src" "test"]
-             :incremental true
+             :incremental? true
              :compiler {:output-to "target/unit-test.js"
                         :optimizations :whitespace
                         :pretty-print true}}}
