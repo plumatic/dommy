@@ -175,40 +175,40 @@
     (set! (.-dommyEventListeners elem)
           (apply f (event-listeners elem) args))))
 
-(defn- node-and-selector
-  [node-sel]
-  (if (sequential? node-sel)
-    ((juxt #(node (first %)) rest) node-sel)
-    [(node node-sel) nil]))
+(defn- elem-and-selector
+  [elem-sel]
+  (if (sequential? elem-sel)
+    ((juxt #(node (first %)) rest) elem-sel)
+    [(node elem-sel) nil]))
 
 (defn listen!
   "Adds `f` as a listener for events of type `event-type` on
-   `node-sel`, which must either be a DOM node, or a sequence
+   `elem-sel`, which must either be a DOM node, or a sequence
    whose first item is a DOM node.
 
    In other words, the call to `listen!` can take two forms:
 
-   If `node-sel` is a DOM node, i.e., you're doing something like:
+   If `elem-sel` is a DOM node, i.e., you're doing something like:
 
-       (listen! node :click click-handler)
-
-   then `click-handler` will be set as a listener for `click` events
-   on the `node`.
-
-   If `node-sel` is a sequence:
-
-       (listen! [node :.selector.for :.some.descendants] :click click-handler)
+       (listen! elem :click click-handler)
 
    then `click-handler` will be set as a listener for `click` events
-   on descendants of `node` that match the selector
+   on the `elem`.
+
+   If `elem-sel` is a sequence:
+
+       (listen! [elem :.selector.for :.some.descendants] :click click-handler)
+
+   then `click-handler` will be set as a listener for `click` events
+   on descendants of `elem` that match the selector
 
    Also accepts any number of event-type and handler pairs for setting
    multiple listeners at once:
 
-       (listen! some-node :click click-handler :hover hover-handler)"
-  [node-sel & type-fs]
+       (listen! some-elem :click click-handler :hover hover-handler)"
+  [elem-sel & type-fs]
   (assert (even? (count type-fs)))
-  (let [[elem selector] (node-and-selector node-sel)]
+  (let [[elem selector] (elem-and-selector elem-sel)]
     (doseq [[orig-type f] (partition 2 type-fs)
             [actual-type factory] (get special-listener-makers orig-type {orig-type identity})
             :let [canonical-f (-> f
@@ -223,20 +223,20 @@
         (.attachEvent elem (name actual-type) canonical-f)))))
 
 (defn unlisten!
-  "Removes event listener for the node defined in `node-sel`,
+  "Removes event listener for the element defined in `elem-sel`,
    which is the same format as listen!.
 
   The following forms are allowed, and will remove all handlers
   that match the parameters passed in:
 
-      (unlisten! [node :.selector] :click event-listener)
+      (unlisten! [elem :.selector] :click event-listener)
 
-      (unlisten! [node :.selector]
+      (unlisten! [elem :.selector]
         :click event-listener
         :mouseover other-event-listener)"
-  [node-sel & type-fs]
+  [elem-sel & type-fs]
   (assert (even? (count type-fs)))
-  (let [[elem selector] (node-and-selector node-sel)]
+  (let [[elem selector] (elem-and-selector elem-sel)]
     (doseq [[orig-type f] (partition 2 type-fs)
             [actual-type _] (get special-listener-makers orig-type {orig-type identity})
             :let [keys [selector actual-type f]
@@ -248,12 +248,12 @@
         (.detachEvent elem (name actual-type) canonical-f)))))
 
 (defn listen-once!
-  [node-sel & type-fs]
+  [elem-sel & type-fs]
   (assert (even? (count type-fs)))
-  (let [[elem selector] (node-and-selector node-sel)]
+  (let [[elem selector] (elem-and-selector elem-sel)]
     (doseq [[type f] (partition 2 type-fs)]
       (listen!
-       node-sel type
+       elem-sel type
        (fn this-fn [e]
-         (unlisten! node-sel type this-fn)
+         (unlisten! elem-sel type this-fn)
          (f e))))))
