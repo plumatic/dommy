@@ -220,7 +220,8 @@
       (if (.-addEventListener elem)
         (.addEventListener elem (name actual-type) canonical-f)
         ;; For IE < 9
-        (.attachEvent elem (name actual-type) canonical-f)))))
+        (.attachEvent elem (name actual-type) canonical-f))))
+  elem-sel)
 
 (defn unlisten!
   "Removes event listener for the element defined in `elem-sel`,
@@ -245,7 +246,8 @@
       (if (.-removeEventListener elem)
         (.removeEventListener elem (name actual-type) canonical-f)
         ;; For IE < 9
-        (.detachEvent elem (name actual-type) canonical-f)))))
+        (.detachEvent elem (name actual-type) canonical-f))))
+  elem-sel)
 
 (defn listen-once!
   [elem-sel & type-fs]
