@@ -258,4 +258,5 @@
        elem-sel type
        (fn this-fn [e]
          (unlisten! elem-sel type this-fn)
-         (f e))))))
+         (f e)))))
+  elem-sel)
