@@ -71,10 +71,12 @@
 
 (defn compound-element
   "element with either attrs or nested children [:div [:span \"Hello\"]]"
-  [data]
-  (let [n (base-element (first data))
-        attrs     (when (map? (second data)) (second data))
-        children  (drop (if attrs 2 1) data)]
+  [[tag-name maybe-attrs & children]]
+  (let [n (base-element tag-name)
+        attrs     (when (and (map? maybe-attrs)
+                             (not (satisfies? PElement maybe-attrs)))
+                    maybe-attrs)
+        children  (if attrs children (cons maybe-attrs children))]
     (doseq [[k v] attrs]
       (case k
         :class (attrs/add-class! n v)
