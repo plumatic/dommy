@@ -274,15 +274,15 @@
                                 "greatgrandchild" greatgrandchild}]
     (dommy/append! js/document.body parent)
     (doseq [[fake-evt real-evt] {:mouseenter :mouseover, :mouseleave :mouseout}
-            node-sel [child [parent :.child]]]
-      (dommy/listen! node-sel fake-evt listener)
+            elem-sel [child [parent :.child]]]
+      (dommy/listen! elem-sel fake-evt listener)
       (doseq [[where relatedTarget] should-call-listener]
         (is (fire!-called-listener? real-evt relatedTarget)
             (format "%s to/from %s is %s" (name real-evt) where (name fake-evt))))
       (doseq [[where relatedTarget] shouldnt-call-listener]
         (is (not (fire!-called-listener? real-evt relatedTarget))
             (format "%s to/from %s isn't %s" (name real-evt) where (name fake-evt))))
-      (dommy/unlisten! node-sel fake-evt listener)
+      (dommy/unlisten! elem-sel fake-evt listener)
       (doseq [[where relatedTarget] (concat should-call-listener shouldnt-call-listener)]
         (is (not (fire!-called-listener? real-evt relatedTarget))
             "after unlisten!-ed, listener never called")))))
@@ -333,22 +333,22 @@
 
 ;; Performance test to run in browser
 
-(defn class-perf-test [node]
+(defn class-perf-test [elem]
   (let [start (.now js/Date)]
     (dotimes [i 1e6]
-      (dommy/has-class? node (str "class" (inc (mod i 10))))
-      (dommy/toggle-class! node (str "class" (inc (mod i 10)))))
+      (dommy/has-class? elem (str "class" (inc (mod i 10))))
+      (dommy/toggle-class! elem (str "class" (inc (mod i 10)))))
     (/ (- (.now js/Date) start) 1000)))
 
-(defn jquery-perf-test [node]
-  (let [node (js/jQuery node)
+(defn jquery-perf-test [elem]
+  (let [elem (js/jQuery elem)
         start (.now js/Date)]
     (dotimes [i 1e6]
-      (.hasClass node (str "class" (inc (mod i 10))))
-      (.toggleClass node (str "class" (inc (mod i 10)))))
+      (.hasClass elem (str "class" (inc (mod i 10))))
+      (.toggleClass elem (str "class" (inc (mod i 10)))))
     (/ (- (.now js/Date) start) 1000)))
 
 (defn ^:export class-perf []
-  (let [node (node [:div.class1.class2.class3.class4.class5])]
-    (.log js/console (pr-str {:dommy  (class-perf-test node)
-                              :jquery (jquery-perf-test node)}))))
+  (let [elem (node [:div.class1.class2.class3.class4.class5])]
+    (.log js/console (pr-str {:dommy  (class-perf-test elem)
+                              :jquery (jquery-perf-test elem)}))))
