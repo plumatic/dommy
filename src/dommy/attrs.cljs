@@ -1,6 +1,6 @@
 (ns dommy.attrs
-  (:require-macros
-    [dommy.macros :as macros])
+  (:use-macros
+    [dommy.macros :only [node]])
   (:require
    [clojure.string :as str]))
 
@@ -33,7 +33,7 @@
   "Does an HTML element have a class. Uses Element::classList if
    available and otherwise does fast parse of className string"
   [elem class]
-  (let [elem (macros/node elem)]
+  (let [elem (node elem)]
     (if-let [class-list (.-classList elem)]
       (.contains class-list class)
       (when-let [class-name (.-className elem)]
@@ -43,7 +43,7 @@
 (defn add-class!
   "add class to element"
   [elem class]
-  (let [elem (macros/node elem)]
+  (let [elem (node elem)]
     (if-let [class-list (.-classList elem)]
       (.add class-list class)
       (let [class-name (.-className elem)]
@@ -67,7 +67,7 @@
 (defn remove-class!
   "remove class from and returns `elem`"
   [elem class]
-  (let [elem (macros/node elem)]
+  (let [elem (node elem)]
     (if-let [class-list (.-classList elem)]
       (.remove  class-list class)
       (let [class-name (.-className elem)
@@ -82,13 +82,13 @@
    (toggle-class! elem class add?) will add-class! if add? is truthy,
    otherwise it will remove-class!"
   ([elem class]
-   (let [elem (macros/node elem)]
+   (let [elem (node elem)]
      (if-let [class-list (.-classList elem)]
        (.toggle class-list class)
        (toggle-class! elem class (not (has-class? elem class))))
      elem))
   ([elem class add?]
-   (let [elem (macros/node elem)]
+   (let [elem (node elem)]
      (if add?
        (add-class! elem class)
        (remove-class! elem class))
@@ -101,7 +101,7 @@
 
 (defn set-style! [elem & kvs]
   (assert (even? (count kvs)))
-  (let [elem (macros/node elem)
+  (let [elem (node elem)
         style (.-style elem)]
     (doseq [[k v] (partition 2 kvs)]
       (aset style (name k) v))
@@ -109,17 +109,17 @@
 
 (defn style [elem k]
   (assert k)
-  (aget (js/window.getComputedStyle (macros/node elem)) (name k)))
+  (aget (js/window.getComputedStyle (node elem)) (name k)))
 
 (defn set-px! [elem & kvs]
   (assert (even? (count kvs)))
-  (let [elem (macros/node elem)]
+  (let [elem (node elem)]
     (doseq [[k v] (partition 2 kvs)]
       (set-style! elem k (str v "px")))
     elem))
 
 (defn px [elem k]
-  (let [pixels (style (macros/node elem) k)]
+  (let [pixels (style (node elem) k)]
     (when (seq pixels)
       (js/parseInt pixels))))
 
@@ -133,10 +133,10 @@
 
        (set-attr! elem :id \"some-id\"
                        :name \"some-name\")"
-  ([elem k] (set-attr! (macros/node elem) k "true"))
+  ([elem k] (set-attr! (node elem) k "true"))
   ([elem k v]
    (when v
-     (doto (macros/node elem)
+     (doto (node elem)
        (.setAttribute
          (name k)
          (if (identical? k :style)
@@ -144,38 +144,38 @@
            v)))))
   ([elem k v & kvs]
    (assert (even? (count kvs)))
-   (let [elem (macros/node elem)]
+   (let [elem (node elem)]
      (doseq [[k v] (->> kvs (partition 2) (cons [k v]))]
        (set-attr! elem k v))
      elem)))
 
 (defn remove-attr!
   ([elem k]
-   (let [elem (macros/node elem)]
+   (let [elem (node elem)]
      (if (#{:class :classes} k)
        (set! (.-className elem) "")
        (.removeAttribute elem (name k)))
      elem))
   ([elem k & ks]
-   (let [elem (macros/node elem)]
+   (let [elem (node elem)]
      (doseq [k (cons k ks)]
        (remove-attr! elem k))
      elem)))
 
 (defn attr [elem k]
   (when k
-    (.getAttribute (macros/node elem) (name k))))
+    (.getAttribute (node elem) (name k))))
 
 (defn hidden? [elem]
-  (identical? "none" (-> (macros/node elem) .-style .-display)))
+  (identical? "none" (-> (node elem) .-style .-display)))
 
 (defn toggle!
   "Display or hide the given `elem`. Takes an optional boolean `show?`
    indicating whether to show or hide `elem`."
   ([elem show?]
-   (doto (macros/node elem)
+   (doto (node elem)
      (-> .-style .-display (set! (if show? "" "none")))))
   ([elem]
-   (let [elem (macros/node elem)]
+   (let [elem (node elem)]
      (toggle! elem (hidden? elem))
      elem)))
