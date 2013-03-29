@@ -97,6 +97,30 @@
     (dommy/toggle-class! el-simple "test")
     (is (dommy/has-class? el-simple "test"))))
 
+(deftest multiple-classes
+  (let [el (node [:div.c0])]
+    (is (dommy/has-class? el "c0"))
+    (doseq [class ["c1" "c2" "c3"]]
+      (is (not (dommy/has-class? el class)) (str "el shouldn't have class " class)))
+
+    (dommy/add-class! el "")
+    (is (dommy/has-class? el "c0"))
+    (doseq [class ["c1" "c2" "c3"]]
+      (is (not (dommy/has-class? el class)) (str "el shouldn't have class " class)))
+
+    (dommy/add-class! el " \r\n\t")
+    (is (dommy/has-class? el "c0"))
+    (doseq [class ["c1" "c2" "c3"]]
+      (is (not (dommy/has-class? el class)) (str "el shouldn't have class " class)))
+
+    (dommy/add-class! el "c1 c2 c3")
+    (doseq [class ["c0" "c1" "c2" "c3"]]
+      (is (dommy/has-class? el class) (str "el should have class " class)))
+
+    (dommy/add-class! el "\t\t    c4 c5 c6\n")
+    (doseq [class ["c0" "c1" "c2" "c3" "c4" "c5" "c6"]]
+      (is (dommy/has-class? el class) (str "el should have class " class)))))
+
 (deftest descendant?
   (let [grandchild (node :.grandchild)
         child (node [:.child grandchild])

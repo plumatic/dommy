@@ -42,16 +42,20 @@
 
 (defn add-class!
   "add class to element"
-  [elem class]
-  (let [elem (node elem)]
-    (if-let [class-list (.-classList elem)]
-      (.add class-list class)
-      (let [class-name (.-className elem)]
-        (when-not (class-index class-name class)
-          (set! (.-className elem)
-                (if (identical? class-name "")
-                  class
-                  (str class-name " " class))))))
+  [elem classes]
+  (let [elem (node elem)
+        classes (str/trim classes)]
+    (when (seq classes)
+      (if-let [class-list (.-classList elem)]
+        (doseq [class (.split classes #"\s+")]
+          (.add class-list class))
+        (let [class-name (.-className elem)]
+          (doseq [class (.split classes #"\s+")]
+            (when-not (class-index class-name class)
+              (set! (.-className elem)
+                    (if (identical? class-name "")
+                      class
+                      (str class-name " " class))))))))
     elem))
 
 (defn- remove-class-str [init-class-name class]
