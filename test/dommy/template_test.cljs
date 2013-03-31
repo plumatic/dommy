@@ -32,6 +32,10 @@
       (is= "DIV" (.-tagName e))
       (is= "id" (.getAttribute e "id"))
       (is= "class1 class2" (.-className e))))
+  (let [e1 (template/node [:div#id {:class "class1 class2"}])
+        e2 (node [:div#id {:class "class1 class2"}])]
+    (doseq [e [e1 e2]]
+      (is (= "class1 class2" (.-className e)))))
   (let [e1 (template/compound-element [:div {:style {:margin-left "15px"}}])
         e2 (node [:div {:style {:margin-left "15px"}}])]
     (doseq [e [e1 e2]]
@@ -161,6 +165,5 @@
        (.-outerHTML (template/node [:ul (for [i (range 3)]
                                           (when (even? i)
                                             [:li i]))]))))
-
 (deftest nil-template-test
   (is= 0 (-> (nil-template) .-childNodes .-length)))
