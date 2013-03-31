@@ -137,21 +137,6 @@
       (is (not (dommy/descendant? grandchild sibling)))
       (is (not (dommy/descendant? child sibling))))))
 
-(defn fire!
-  "Creates an event of type `event-type`, optionally having
-   `update-event!` mutate and return an updated event object,
-   and fires it on `node`.
-   Only works when `node` is in the DOM"
-  [node event-type & [update-event!]]
-  (assert (dommy/descendant? node js/document.documentElement))
-  (let [update-event! (or update-event! identity)]
-    (if (.-createEvent js/document)
-      (let [event (.createEvent js/document "Event")]
-        (.initEvent event (name event-type) true true)
-        (.dispatchEvent node (update-event! event)))
-      (.fireEvent node (str "on" (name event-type))
-                  (update-event! (.createEventObject js/document))))))
-
 (deftest listener-simple
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
@@ -159,7 +144,7 @@
     (is= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
          el-simple)
     (is= 0 @click-cnt)
-    (fire! el-simple :click)
+    (dommy/fire! el-simple :click)
     (is= 1 @click-cnt)))
 
 (deftest ancestor-nodes
@@ -215,7 +200,7 @@
     (is= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
          el-simple)
     (is= 0 @click-cnt)
-    (fire! el-simple :click)
+    (dommy/fire! el-simple :click)
     (is= 1 @click-cnt)))
 
 (deftest listen!-multi
@@ -226,9 +211,9 @@
     (is= (dommy/listen! el :click listener :dblclick listener)
          el)
     (is= 0 @click-cnt)
-    (fire! el :click)
+    (dommy/fire! el :click)
     (is= 1 @click-cnt)
-    (fire! el :dblclick)
+    (dommy/fire! el :dblclick)
     (is= 2 @click-cnt)))
 
 (deftest unlisten!
@@ -238,25 +223,25 @@
     (dommy/append! js/document.body el-nested)
     (is= (dommy/listen! [el-nested :li] :click listener)
          [el-nested :li])
-    (fire! (sel1 el-nested :li) :click)
+    (dommy/fire! (sel1 el-nested :li) :click)
     (is= 1 @click-cnt)
     (is= (dommy/unlisten! [el-nested :li] :click listener)
          [el-nested :li])
-    (fire! (sel1 el-nested :li) :click)
+    (dommy/fire! (sel1 el-nested :li) :click)
     (is= 1 @click-cnt)
     (is= (dommy/listen! [el-nested :li] :click listener)
          [el-nested :li])
-    (fire! (sel1 el-nested :li) :click)
+    (dommy/fire! (sel1 el-nested :li) :click)
     (is= 2 @click-cnt)
     (let [el-nested (node [:.parent [:.child [:.grandchild]]])]
       (dommy/append! js/document.body el-nested)
       (is= (dommy/listen! [el-nested :.child :.grandchild] :click listener)
            [el-nested :.child :.grandchild])
-      (fire! (sel1 el-nested :.grandchild) :click)
+      (dommy/fire! (sel1 el-nested :.grandchild) :click)
       (is= 3 @click-cnt)
       (is= (dommy/unlisten! [el-nested :.child :.grandchild] :click listener)
            [el-nested :.child :.grandchild])
-      (fire! (sel1 el-nested [:.child :.grandchild]) :click)
+      (dommy/fire! (sel1 el-nested [:.child :.grandchild]) :click)
       (is= 3 @click-cnt))))
 
 (deftest unlisten!-multi
@@ -266,13 +251,13 @@
     (dommy/append! js/document.body el)
     (is= (dommy/listen! el :click listener :dblclick listener)
          el)
-    (fire! el :click)
-    (fire! el :dblclick)
+    (dommy/fire! el :click)
+    (dommy/fire! el :dblclick)
     (is= 2 @click-cnt)
     (is= (dommy/unlisten! el :click listener :dblclick listener)
          el)
-    (fire! el :click)
-    (fire! el :dblclick)
+    (dommy/fire! el :click)
+    (dommy/fire! el :dblclick)
     (is= 2 @click-cnt)))
 
 (deftest listen-once!
@@ -281,9 +266,9 @@
     (dommy/append! js/document.body el)
     (is= (dommy/listen-once! el :click #(swap! click-cnt inc))
          el)
-    (fire! el :click)
+    (dommy/fire! el :click)
     (is= 1 @click-cnt)
-    (fire! el :click)
+    (dommy/fire! el :click)
     (is= 1 @click-cnt)))
 
 (deftest mouseenter-and-mouseleave
@@ -297,7 +282,7 @@
         fire!-called-listener?
         (fn [evt-type relatedTarget]
           (let [orig-count @counter]
-            (fire! child evt-type
+            (dommy/fire! child evt-type
                    #(doto % (aset "relatedTarget" relatedTarget)))
             (is (some #(= @counter (% orig-count)) [identity inc])
                 "counter value is valid (just being defensive)")
