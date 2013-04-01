@@ -76,7 +76,7 @@ Thanks to [@ibdknox](https://github.com/ibdknox/) you can have custom view logic
 
 ### Document fragments
 
-You can also make document fragments using the slightly more generate `template/->node-like`:
+You can also make document fragments using the slightly more general `template/->node-like`:
 
 ```clojure
 (template/->node-like
@@ -100,7 +100,6 @@ to coerce into a single compound element as with `template/node`.
 There is a also a macro DOM building function which can be significantly faster if most of your template structure can be expressed nested vector literals. It's really worth taking a look at the code and understanding what will and won't be done at compile time (see ns <code>dommy.macros</code>). Here's an example:
 
 ```clojure
-
 (defn simple-template [word]
   (dommy.macros/node
     [:div#id.class1
@@ -111,7 +110,6 @@ Alternatively, you can use the <code>deftemplate</code> macro:
 
 
 ```clojure
-
 (deftemplate simple-template [word]
   [:div#id.class1
 	  [:span.text word]])
@@ -132,7 +130,6 @@ function simple_template(word) {
   }());
   return dom56633
 }
-
 ```
 
 The <code>node</code> macro will 'compile' the structure to efficient JavaScript recursively as
@@ -156,10 +153,8 @@ the symbol as a text node and doesn't use the runtime templating.
 For instance, this template
 
 ```clojure
-
 (deftemplate simple-template [[href anchor]]
     [:a.anchor {:href href} ^:text anchor])
-
 ```
 
 Will generate the following Javascript:
@@ -187,7 +182,6 @@ Dommy also has DOM manipulation similar to jQuery, which can be threaded using t
 to simulate jQuery-style chaining.
 
 ```clojure
-
 (= (-> [:#root.container]
        (dommy/append! (dommy/add-class! [:span "Some Text"] "child-class"))
   	   (dommy/toggle-class! "container")
