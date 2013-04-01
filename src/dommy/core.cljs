@@ -1,11 +1,20 @@
 (ns dommy.core
+  "Core DOM manipulaiton function
+
+   Many of these functions take something which is node-like. Node-like
+   refers to the result of calling `dommy.template/->node-like` on the object. For
+   any DOM node, ->node-like returns the same reference equals object. When it gets
+   passed nested data structure it converts to a fresh DOM node. It falls back to the PElement
+   protocol (see dommy.template) so is extensible."
   (:use-macros
-   [dommy.macros :only [sel node]])
+   [dommy.macros :only [sel]])
   (:require
    [clojure.string :as str]
    [dommy.attrs :as attrs]
    [dommy.template :as template]))
 
+;; Shadowing names from dommy.attrs 
+;; for backwards compatibility
 (def has-class? attrs/has-class?)
 (def add-class! attrs/add-class!)
 (def remove-class! attrs/remove-class!)
@@ -38,33 +47,37 @@
   (.call js/Array.prototype.slice array-like))
 
 (defn append!
-  "append `child` to `parent`, both DOM nodes. return `parent`"
+  "append `child` to `parent`. 'parent' and 'child' should be node-like 
+   (work with dommy.template/->node-like). The node-like projection
+   of parent is returned after appending child."
   [parent child]
-  (doto (node parent)
+  (doto (template/->node-like parent)
     (.appendChild (template/->node-like child))))
 
 (defn prepend!
-  "prepend `child` to `parent`, both DOM nodes. return `parent`"
+  "prepend `child` to `parent`, both node-like 
+   return ->node-like projection of `parent`"
   [parent child]
-  (doto (node parent)
+  (doto (template/->node-like parent)
     (.insertBefore (template/->node-like child)
                    (.-firstChild parent))))
 
 (defn insert-before!
-  "insert `node` before `other`, both DOM nodes,
+  "insert `node` before `other`, both node-like,
    `other` must have a parent. return `node`"
   [elem other]
   (let [actual-node (template/->node-like elem)
-        other (node other)]
+        other (template/->node-like other)]
+    (assert (.-parentNode other))
     (.insertBefore (.-parentNode other) actual-node other)
     actual-node))
 
 (defn insert-after!
-  "insert `node` after `other`, both DOM nodes,
+  "insert `node` after `other`, both node-like,
    `other` must have a parent. return `node`"
   [elem other]
   (let [actual-node (template/->node-like elem)
-        other (node other)
+        other (template/->node-like other)
         parent (.-parentNode other)]
     (if-let [next (.-nextSibling other)]
       (.insertBefore parent actual-node next)
@@ -72,23 +85,25 @@
     actual-node))
 
 (defn replace!
-  "replace `node` with new (made from `data`), return new"
-  [elem data]
-  (let [new (template/->node-like data)
-        elem (node elem)]
+  "replace `elem` with `new`, both node-like, return node-like projection of new.
+   node-like projection of elem must have parent."
+  [elem new]
+  (let [new (template/->node-like new)
+        elem (template/->node-like elem)]
+    (assert (.-parentNode elem))
     (.replaceChild (.-parentNode elem) new elem)
     new))
 
 (defn replace-contents!
   [parent node-like]
-  (doto (node parent)
+  (doto (template/->node-like parent)
     (-> .-innerHTML (set! ""))
     (append! node-like)))
 
 (defn remove!
-  "remove `node` from parent, return parent"
+  "remove node-like `elem` from parent, return node-like projection of elem"
   [elem]
-  (let [elem (node elem)]
+  (let [elem (template/->node-like elem)]
     (doto (.-parentNode elem)
       (.removeChild elem))))
 
@@ -100,7 +115,7 @@
 (defn ancestor-nodes
   "a lazy seq of the ancestors of `node`"
   [elem]
-  (->> (node elem)
+  (->> (template/->node-like elem)
        (iterate #(.-parentNode %))
        (take-while identity)))
 
@@ -109,7 +124,7 @@
    time of this `matches-pred` call (may return outdated results
    if you fuck with the DOM)"
   ([base selector]
-   (let [matches (sel (node base) selector)]
+   (let [matches (sel (template/->node-like base) selector)]
      (fn [elem]
        (-> matches (.indexOf elem) (>= 0)))))
   ([selector]
@@ -119,21 +134,21 @@
   "closest ancestor of `node` (up to `base`, if provided)
    that matches `selector`"
   ([base elem selector]
-   (let [base (node base)
-         elem (node elem)]
+   (let [base (template/->node-like base)
+         elem (template/->node-like elem)]
      (->> (ancestor-nodes elem)
           (take-while #(not (identical? % base)))
           (filter (matches-pred base selector))
           first)))
   ([elem selector]
-     (first (filter (matches-pred selector) (ancestor-nodes (node elem))))))
+     (first (filter (matches-pred selector) (ancestor-nodes (template/->node-like elem))))))
 
 (defn descendant?
   "is `descendant` a descendant of `ancestor`?"
   [descendant ancestor]
   ;; http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html
-  (let [descendant (node descendant)
-        ancestor (node ancestor)]
+  (let [descendant (template/->node-like descendant)
+        ancestor (template/->node-like ancestor)]
     (cond (.-contains ancestor)
           (.contains ancestor descendant)
           (.-compareDocumentPosition ancestor)
@@ -160,26 +175,26 @@
   "fires f if event.target is found with `selector`"
   [elem selector f]
   (fn [event]
-    (when-let [selected-target (closest (node elem) (.-target event) selector)]
+    (when-let [selected-target (closest (template/->node-like elem) (.-target event) selector)]
       (set! (.-selectedTarget event) selected-target)
       (f event))))
 
 (defn- event-listeners
   "Returns a nested map of event listeners on `nodes`"
   [elem]
-  (or (.-dommyEventListeners (node elem)) {}))
+  (or (.-dommyEventListeners (template/->node-like elem)) {}))
 
 (defn- update-event-listeners!
   [elem f & args]
-  (let [elem (node elem)]
+  (let [elem (template/->node-like elem)]
     (set! (.-dommyEventListeners elem)
           (apply f (event-listeners elem) args))))
 
 (defn- elem-and-selector
   [elem-sel]
   (if (sequential? elem-sel)
-    ((juxt #(node (first %)) rest) elem-sel)
-    [(node elem-sel) nil]))
+    ((juxt #(template/->node-like (first %)) rest) elem-sel)
+    [(template/->node-like elem-sel) nil]))
 
 (defn listen!
   "Adds `f` as a listener for events of type `event-type` on
