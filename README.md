@@ -1,8 +1,11 @@
 # dommy
 
-Dommy is no-nonsense ClojureScript DOM templating and manipulation library. Templating is based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test `dommy.template-perf-test`). It also has a compile-time macro component that is significantly (5x) faster, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below). 
+*Note*: There has been a breaking change to the namespaces in Dommy 0.1.0. All macros, either for manipulation
+or templating, are in `dommy.macros`.
 
-DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is also significantly faster (roughly 2x) for common tasks like toggling classes (see this [performance test](https://github.com/Prismatic/dommy/tree/master/test/dommycore_test.clj)).
+Dommy is no-nonsense ClojureScript DOM templating and manipulation library. Templating is based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test `dommy.template-perf-test`). It also has a compile-time macro component that is significantly (5x) faster than the runtime templating, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below). The compile-time macros are roughly 3x the speed of jQuery's templates and 12x faster than Crate.  
+
+DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is also significantly faster (roughly 2x) for common tasks like toggling or adding classes (see this [performance test](https://github.com/Prismatic/dommy/tree/master/test/dommycore_test.clj)).
 
 
 ## Installation
@@ -11,7 +14,7 @@ Add the following dependency on your project.clj:
 
 ```clojure
 ;; latest stable release
-[prismatic/dommy "0.0.2"]
+[prismatic/dommy "0.1.0"]
 ```
 
 ## Templating Usage
@@ -33,7 +36,7 @@ Add the following dependency on your project.clj:
 => "<div id=\"id\" class=\"class1\"><span class=\"text\">word0</span><span class=\"text\">word1</span></div>"
 ```
 
-### Classes as a vec/sec
+### Classes as a vec
 
 ```clojure
 (template/node [:div {:classes ["foo" "bar" "baz"]}])
@@ -71,14 +74,35 @@ Thanks to [@ibdknox](https://github.com/ibdknox/) you can have custom view logic
 => "<p>My data is big</p>"
 ```
 
+### Document fragments
+
+You can also make document fragments using the slightly more generate `template/->node-like`:
+
+```clojure
+(template/->node-like
+  (list :.class1 :.class2 :.class3))
+```
+Yields a document fragment for each of the templates in the list. So specifically,
+
+```clojure
+(is= "<div><div class="class1"></div><div class="class2"></div><div class="class3"></div></div>"
+   (.-outerHTML
+    (doto (template/node [:div])
+      (.appendChild 
+       (template/->node-like (list :.class1 :.class2 :.class3))))))
+```
+
+`template/->node-like` only returns a document fragment when passed a list. On a vector it attempts
+to coerce into a single compound element as with `template/node`.
+
 ### Compile Macros
 
-There is a also a macro DOM building function which can be significantly faster if most of your template structure can be expressed nested vector literals. It's really worth taking a look at the code and understanding what will and won't be done at compile time (see ns <code>dommy.template-compile</code>). Here's an example:
+There is a also a macro DOM building function which can be significantly faster if most of your template structure can be expressed nested vector literals. It's really worth taking a look at the code and understanding what will and won't be done at compile time (see ns <code>dommy.macros</code>). Here's an example:
 
 ```clojure
 
 (defn simple-template [word]
-  (dommy.template-compile/node
+  (dommy.macros/node
     [:div#id.class1
 	  [:span.text word]]))
 ```
@@ -112,7 +136,8 @@ function simple_template(word) {
 ```
 
 The <code>node</code> macro will 'compile' the structure to efficient JavaScript recursively as
-long as data is expressed as literals.
+long as data is expressed as literals. It falls back to the runtime macro when it encounters a variable
+or some 'unparseable' structure. 
 
 ### Type-Hinting Template Macros
 
@@ -120,7 +145,7 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 
 
 ```clojure
-(dommy.template-compile/node  [:a ^:attrs (merge m1 m2)])
+(dommy.macros/node  [:a ^:attrs (merge m1 m2)])
 ```
 
 Again this is **not** necessary when the attribute map is a literal (that map can even contain symbolic keys or values).
@@ -163,15 +188,14 @@ to simulate jQuery-style chaining.
 
 ```clojure
 
-(= (-> (dommy-template/node [:div#root.container])
-       (dommy/append! (-> (dommy-template/node [:span "Some Text"])
-	                      (dommy/add-class! "child-class"))
-	   (dommy/toggle-class! "container")
+(= (-> [:#root.container]
+       (dommy/append! (dommy/add-class! [:span "Some Text"] "child-class"))
+  	   (dommy/toggle-class! "container")
        .-outerHTML)
   "<div id=\"id\"><span class=\"child-class\">Some Text</span></div>")
   
 ;; Also equivalent to the simpler template
-(dommy-template/node [:div#root [:span.child-class "Some Text"]])  
+(dommy.macros/node [:div#root [:span.child-class "Some Text"]])  
 ```
 
 According to a simple benchmark, dommy performs twice as fast compared to jQuery on a simple `toggleClass`, `hasClass` benchmark. 
