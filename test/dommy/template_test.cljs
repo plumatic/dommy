@@ -167,3 +167,11 @@
                                             [:li i]))]))))
 (deftest nil-template-test
   (is= 0 (-> (nil-template) .-childNodes .-length)))
+
+(deftest ->node-like  
+  (is=
+   "<div><div class=\"class1\"></div><div class=\"class2\"></div><div class=\"class3\"></div></div>"
+   (.-outerHTML
+    (doto (template/node [:div])
+      (.appendChild 
+       (template/->node-like (list :.class1 :.class2 :.class3)))))))
