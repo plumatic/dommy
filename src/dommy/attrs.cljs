@@ -183,3 +183,10 @@
    (let [elem (node elem)]
      (toggle! elem (hidden? elem))
      elem)))
+
+(defn hide! [elem]
+  (doto (node elem) (toggle! false)))
+
+(defn show! [elem]
+  (doto (node elem) (toggle! true)))
+

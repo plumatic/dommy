@@ -13,7 +13,7 @@
    [dommy.attrs :as attrs]
    [dommy.template :as template]))
 
-;; Shadowing names from dommy.attrs 
+;; Shadowing names from dommy.attrs
 ;; for backwards compatibility
 (def has-class? attrs/has-class?)
 (def add-class! attrs/add-class!)
@@ -31,6 +31,8 @@
 (def attr attrs/attr)
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
+(def hide! attrs/hide!)
+(def show! attrs/show!)
 
 (defn dissoc-in
   "Dissociate this keyseq from m, removing any empty maps created as a result
@@ -47,7 +49,7 @@
   (.call js/Array.prototype.slice array-like))
 
 (defn append!
-  "append `child` to `parent`. 'parent' and 'child' should be node-like 
+  "append `child` to `parent`. 'parent' and 'child' should be node-like
    (work with dommy.template/->node-like). The node-like projection
    of parent is returned after appending child."
   [parent child]
@@ -55,7 +57,7 @@
     (.appendChild (template/->node-like child))))
 
 (defn prepend!
-  "prepend `child` to `parent`, both node-like 
+  "prepend `child` to `parent`, both node-like
    return ->node-like projection of `parent`"
   [parent child]
   (doto (template/->node-like parent)
