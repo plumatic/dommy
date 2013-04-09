@@ -140,12 +140,15 @@
   ([elem k] (set-attr! (node elem) k "true"))
   ([elem k v]
    (when v
-     (doto (node elem)
-       (.setAttribute
-         (name k)
-         (if (identical? k :style)
-           (style-str v)
-           v)))))
+     (if (fn? v)
+       (doto (node elem)
+         (aset (name k) v))
+       (doto (node elem)
+         (.setAttribute
+           (name k)
+           (if (identical? k :style)
+             (style-str v)
+             v))))))
   ([elem k v & kvs]
    (assert (even? (count kvs)))
    (let [elem (node elem)]
