@@ -33,7 +33,8 @@
   "Does an HTML element have a class. Uses Element::classList if
    available and otherwise does fast parse of className string"
   [elem class]
-  (let [elem (node elem)]
+  (let [elem (node elem)
+        class (name class)]
     (if-let [class-list (.-classList elem)]
       (.contains class-list class)
       (when-let [class-name (.-className elem)]
@@ -42,21 +43,26 @@
 
 (defn add-class!
   "add class to element"
-  [elem classes]
-  (let [elem (node elem)
-        classes (str/trim classes)]
-    (when (seq classes)
-      (if-let [class-list (.-classList elem)]
-        (doseq [class (.split classes #"\s+")]
-          (.add class-list class))
-        (let [class-name (.-className elem)]
-          (doseq [class (.split classes #"\s+")]
-            (when-not (class-index class-name class)
-              (set! (.-className elem)
-                    (if (identical? class-name "")
-                      class
-                      (str class-name " " class))))))))
-    elem))
+  ([elem classes]
+     (let [elem (node elem)
+           classes (-> classes name str/trim)]
+       (when (seq classes)
+         (if-let [class-list (.-classList elem)]
+           (doseq [class (.split classes #"\s+")]
+             (.add class-list class))
+           (let [class-name (.-className elem)]
+             (doseq [class (.split classes #"\s+")]
+               (when-not (class-index class-name class)
+                 (set! (.-className elem)
+                       (if (identical? class-name "")
+                         class
+                         (str class-name " " class))))))))
+       elem))
+  ([elem classes & more-classes]
+     (let [elem (node elem)]
+       (doseq [c (conj more-classes classes)]
+         (add-class! elem c))
+       elem)))
 
 (defn- remove-class-str [init-class-name class]
   (loop [class-name init-class-name]
@@ -70,15 +76,20 @@
 
 (defn remove-class!
   "remove class from and returns `elem`"
-  [elem class]
-  (let [elem (node elem)]
-    (if-let [class-list (.-classList elem)]
-      (.remove  class-list class)
-      (let [class-name (.-className elem)
-            new-class-name (remove-class-str class-name (name class))]
-        (when-not (identical? class-name new-class-name)
-          (set! (.-className elem) new-class-name))))
-    elem))
+  ([elem class]
+     (let [elem (node elem)
+           class (name class)]
+       (if-let [class-list (.-classList elem)]
+         (.remove class-list class)
+         (let [class-name (.-className elem)
+               new-class-name (remove-class-str class-name class)]
+           (when-not (identical? class-name new-class-name)
+             (set! (.-className elem) new-class-name))))
+       elem))
+  ([elem class & classes]
+     (let [elem (node elem)]
+       (doseq [c (conj classes class)]
+         (remove-class! elem c)))))
 
 (defn toggle-class!
   "(toggle-class! elem class) will add-class! if elem does not have class

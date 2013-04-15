@@ -121,6 +121,20 @@
     (doseq [class ["c0" "c1" "c2" "c3" "c4" "c5" "c6"]]
       (is (dommy/has-class? el class) (str "el should have class " class)))))
 
+(deftest variadic-classes
+  (let [el (node :div)]
+    (dommy/add-class! el :foo :bar)
+    (is (dommy/has-class? el :foo))
+    (is (dommy/has-class? el :bar))
+    (dommy/remove-class! el :foo :bar)
+    (is (not (dommy/has-class? el :foo)))
+    (is (not (dommy/has-class? el :bar)))
+    (dommy/add-class! el "this is" "four classes")
+    (is (dommy/has-class? el :this))
+    (is (dommy/has-class? el "is"))
+    (is (dommy/has-class? el :four))
+    (is (dommy/has-class? el "classes"))))
+
 (deftest descendant?
   (let [grandchild (node :.grandchild)
         child (node [:.child grandchild])
