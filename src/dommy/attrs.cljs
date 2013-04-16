@@ -204,3 +204,12 @@
 (defn show! [elem]
   (doto (node elem) (toggle! true)))
 
+(defn bounding-client-rect
+  "Returns a map of the bounding client rect of `elem`
+   as a map with [:top :left :right :bottom :width :height]"
+  [elem]
+  (-> elem
+      node
+      .getBoundingClientRect
+      (doto (aset "constructor" js/Object))
+      (js->clj :keywordize-keys true)))

@@ -33,6 +33,7 @@
 (def toggle! attrs/toggle!)
 (def hide! attrs/hide!)
 (def show! attrs/show!)
+(def bounding-client-rect attrs/bounding-client-rect)
 
 (defn dissoc-in
   "Dissociate this keyseq from m, removing any empty maps created as a result

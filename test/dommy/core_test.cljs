@@ -365,6 +365,14 @@
     (is= (aget array 0) "lol")
     (is= (aget array 1) "wut")))
 
+(deftest bounding-client-rect
+  (set! js/document.body.scrollTop 0)
+  (let [el (doto (node [:div {:style {:position "absolute" :left "100px" :top "200px"}}])
+             (->> (dommy/append! js/document.body)))
+        {:keys [left top]} (dommy/bounding-client-rect el)]
+    (is= left 100)
+    (is= top 200)))
+
 ;; Performance test to run in browser
 
 (defn class-perf-test [elem]
