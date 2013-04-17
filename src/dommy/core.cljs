@@ -146,7 +146,7 @@
   ([elem selector]
      (first (filter (matches-pred selector) (ancestor-nodes (template/->node-like elem))))))
 
-(defn descendant?
+(defn ^boolean descendant?
   "is `descendant` a descendant of `ancestor`?"
   [descendant ancestor]
   ;; http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html

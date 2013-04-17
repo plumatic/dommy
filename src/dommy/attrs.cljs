@@ -4,7 +4,7 @@
   (:require
    [clojure.string :as str]))
 
-(defn- class-match?
+(defn- ^boolean class-match?
   "does class-name string have class starting at index idx.
    only will be used when Element::classList doesn't exist"
   [class-name class idx]
@@ -29,7 +29,7 @@
           i
           (recur (+ i (.-length class))))))))
 
-(defn has-class?
+(defn ^boolean has-class?
   "Does an HTML element have a class. Uses Element::classList if
    available and otherwise does fast parse of className string"
   [elem class]
@@ -102,7 +102,7 @@
        (.toggle class-list class)
        (toggle-class! elem class (not (has-class? elem class))))
      elem))
-  ([elem class add?]
+  ([elem class ^boolean add?]
    (let [elem (node elem)]
      (if add?
        (add-class! elem class)
@@ -184,13 +184,13 @@
   (when k
     (.getAttribute (node elem) (name k))))
 
-(defn hidden? [elem]
+(defn ^boolean hidden? [elem]
   (identical? "none" (-> (node elem) .-style .-display)))
 
 (defn toggle!
   "Display or hide the given `elem`. Takes an optional boolean `show?`
    indicating whether to show or hide `elem`."
-  ([elem show?]
+  ([elem ^boolean show?]
    (doto (node elem)
      (-> .-style .-display (set! (if show? "" "none")))))
   ([elem]
