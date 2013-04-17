@@ -98,9 +98,6 @@
   js/HTMLDocument
   (-elem [this] this)
 
-  js/Window
-  (-elem [this] this)
-
   PersistentVector
   (-elem [this] (compound-element this))
 
@@ -112,6 +109,13 @@
          (if (keyword? this)
            (base-element this)
            (.createTextNode js/document (str this)))))
+
+(try
+  (extend-protocol PElement
+    js/Window
+    (-elem [this] this))
+  (catch js/ReferenceError _
+    (.log js/console "PElement: js/Window not defined by browser, skipping it... (running on phantomjs?)")))
 
 (defn node [data]
   (if (satisfies? PElement data)
