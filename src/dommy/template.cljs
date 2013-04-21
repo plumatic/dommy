@@ -6,8 +6,9 @@
 (defprotocol PElement
   (-elem [this] "return the element representation of this"))
 
-(defn next-css-index [s start-idx]
+(defn next-css-index
   "index of css character (#,.) in base-element. bottleneck"
+  [s start-idx]
   (let [id-idx (.indexOf s "#" start-idx)
         class-idx (.indexOf s "." start-idx)
         idx (.min js/Math id-idx class-idx)]
