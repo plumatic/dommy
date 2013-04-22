@@ -3,6 +3,17 @@
 
 (declare node)
 
+(defn single-selector? [data]
+  (or (string? data) (keyword? data)))
+
+(defn id-selector? [s]
+  (and (single-selector? s)
+       (re-matches #"^#\w+$" (name s))))
+
+(defn class-selector? [s]
+  (and (single-selector? s)
+       (re-matches #"^\.\w+$" (name s))))
+
 (defn constant? [data]
   (cond
    (coll? data) (every? constant? data)
@@ -11,23 +22,40 @@
 (defn selector [data]
   (cond
    (coll? data) (clojure.string/join " " (map selector data))
-   (or (string? data) (keyword? data)) (name data)))
+   (single-selector? data) (name data)))
 
 (defn selector-form [data]
   (if (constant? data)
-     (selector data)
-     `(dommy.core/selector ~data)))
+    (selector data)
+    `(dommy.core/selector ~data)))
+
+(defmacro by-id [id]
+  (let [id (-> id name (clojure.string/replace #"#" ""))]
+    `(js/document.getElementById ~id)))
+
+(defmacro by-class
+  ([base data]
+     (let [data (-> data name (clojure.string/replace "." ""))]
+       `(dommy.core/->Array
+         (.getElementsByClassName ~base ~data))))
+  ([data]
+     `(by-class js/document ~data)))
 
 (defmacro sel1
   ([base data]
-     `(.querySelector (node ~base) ~(selector-form data)))
+     (cond
+      (id-selector? data) `(by-id ~data)
+      (class-selector? data) `(nth (by-class ~base ~data) 0)
+      :else `(.querySelector (node ~base) ~(selector-form data))))
   ([data]
      `(sel1 js/document ~data)))
 
 (defmacro sel
   ([base data]
-     `(dommy.core/->Array
-       (.querySelectorAll (node ~base) ~(selector-form data))))
+     (if (class-selector? data)
+       `(by-class ~base ~data)
+       `(dommy.core/->Array
+         (.querySelectorAll (node ~base) ~(selector-form data)))))
   ([data]
      `(sel js/document ~data)))
 
