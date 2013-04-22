@@ -3,26 +3,34 @@
 
 (declare node)
 
+(defn constant? [data]
+  (some #(% data) [number? keyword? string?]))
+
+(defn all-constant? [data]
+  (cond
+   (coll? data) (every? all-constant? data)
+   (constant? data) true))
+
 (defn single-selector? [data]
-  (or (string? data) (keyword? data)))
+  (and (constant? data)
+       (re-matches #"^\S+$" (name data))))
 
 (defn id-selector? [s]
-  (and (single-selector? s)
+  (and (constant? s)
        (re-matches #"^#\w+$" (name s))))
 
 (defn class-selector? [s]
-  (and (single-selector? s)
+  (and (constant? s)
        (re-matches #"^\.\w+$" (name s))))
 
-(defn constant? [data]
-  (cond
-   (coll? data) (every? constant? data)
-   (some #(% data) [number? keyword? string?]) true))
+(defn tag-selector? [s]
+  (and (constant? s)
+       (re-matches #"^\w+$" (name s))))
 
 (defn selector [data]
   (cond
-   (coll? data) (clojure.string/join " " (map selector data))
-   (single-selector? data) (name data)))
+   (coll? data) (str/join " " (map selector data))
+   (constant? data) (name data)))
 
 (defn selector-form [data]
   (if (constant? data)
@@ -30,30 +38,43 @@
     `(dommy.core/selector ~data)))
 
 (defmacro by-id [id]
-  (let [id (-> id name (clojure.string/replace #"#" ""))]
+  (let [id (-> id name (str/replace #"#" ""))]
     `(js/document.getElementById ~id)))
 
 (defmacro by-class
   ([base data]
-     (let [data (-> data name (clojure.string/replace "." ""))]
+     (let [data (-> data name (str/replace "." ""))]
        `(dommy.core/->Array
          (.getElementsByClassName ~base ~data))))
   ([data]
      `(by-class js/document ~data)))
 
+(defmacro by-tag
+  ([base data]
+     `(dommy.core/->Array
+       (.getElementsByTagName ~base ~(name data))))
+  ([data]
+     `(by-tag js/document ~data)))
+
 (defmacro sel1
   ([base data]
-     (cond
-      (id-selector? data) `(by-id ~data)
-      (class-selector? data) `(nth (by-class ~base ~data) 0)
-      :else `(.querySelector (node ~base) ~(selector-form data))))
+     (if (single-selector? data)
+       (condp #(%1 %2) (name data)
+         #(identical? "body" %) `js/document.body
+         #(identical? "head" %) `js/document.head
+         id-selector? `(by-id ~data)
+         class-selector? `(nth (by-class ~base ~data) 0)
+         tag-selector? `(nth (by-tag ~base ~data) 0))
+       `(.querySelector (node ~base) ~(selector-form data))))
   ([data]
      `(sel1 js/document ~data)))
 
 (defmacro sel
   ([base data]
-     (if (class-selector? data)
-       `(by-class ~base ~data)
+     (if (single-selector? data)
+       (condp #(%1 %2) (name data)
+         class-selector? `(by-class ~base ~data)
+         tag-selector? `(by-tag ~base ~data))
        `(dommy.core/->Array
          (.querySelectorAll (node ~base) ~(selector-form data)))))
   ([data]
