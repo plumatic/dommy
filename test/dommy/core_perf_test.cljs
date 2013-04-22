@@ -11,7 +11,7 @@
 
 (defn ^:export selector-perf-test []
   (dommy/append! js/document.body [:#c1 [:.c2 [:.c3]] [:.c3]])
-  (->> {:dommy-body #(sel1 "body")
+  (->> {:dommy-body #(sel1 :body)
         :jquery-body #(js/jQuery "body")
         :dommy-id #(sel1 :#c1)
         :jquery-id #(js/jQuery "#c1")
