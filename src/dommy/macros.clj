@@ -63,8 +63,8 @@
          #(identical? "body" %) `js/document.body
          #(identical? "head" %) `js/document.head
          id-selector? `(by-id ~data)
-         class-selector? `(nth (by-class ~base ~data) 0)
-         tag-selector? `(nth (by-tag ~base ~data) 0))
+         class-selector? `(aget (by-class ~base ~data) 0)
+         tag-selector? `(aget (by-tag ~base ~data) 0))
        `(.querySelector (node ~base) ~(selector-form data))))
   ([data]
      `(sel1 js/document ~data)))
