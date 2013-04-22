@@ -19,7 +19,6 @@
         :jquery-class-sel1 #(aget (js/jQuery ".c3") 0)
         :dommy-multi-class #(sel ".c2, .c3")
         :jquery-multi-class #(js/jQuery ".c2, .c3")}
-       shuffle
        (map (fn [[k f]]
               (let [results (repeatedly samples #(profile-fn f))
                     total (apply + results)]
