@@ -4,12 +4,12 @@
   (:require
    [dommy.core :as dommy]))
 
-(defn run-test [[key sel-fn]]
-  (let [now (js/Date.)]
-    (dotimes [n 1e5] (sel-fn))
-    [key (/ (- (js/Date.) now) 1000)]))
+(defn profile-fn [f]
+  (let [now (js/performance.now)]
+    (f)
+    (- (js/performance.now) now)))
 
-(defn ^:export selector-perf-test []
+(defn ^:export selector-perf-test [samples]
   (dommy/append! js/document.body [:#c1 [:.c2 [:.c3]] [:.c3]])
   (->> {:dommy-body #(sel1 :body)
         :jquery-body #(js/jQuery "body")
@@ -20,6 +20,10 @@
         :dommy-multi-class #(sel ".c2, .c3")
         :jquery-multi-class #(js/jQuery ".c2, .c3")}
        shuffle
-       (map run-test)
+       (map (fn [[k f]]
+              (let [results (repeatedly samples #(profile-fn f))
+                    total (apply + results)]
+                [k {:total total
+                    :mean (/ total (count results))}])))
        (into {})
-       str))
+       clj->js))
