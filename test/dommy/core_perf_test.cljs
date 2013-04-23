@@ -57,4 +57,15 @@
       :jquery #(.toggleClass jquery-el "pwned")}
      samples)))
 
-
+(defn ^:export listen-perf-test [samples]
+  (let [el (node [:div [:.child]])
+        jquery-el (js/jQuery el)
+        noop #()]
+    (perf-test-map
+     {:naked-simple #(do (.addEventListener el "click" noop)
+                         (.removeEventListener el "click" noop))
+      :dommy-simple #(do (dommy/listen! el :click noop)
+                         (dommy/unlisten! el :click noop))
+      :jquery-simple #(do (.on jquery-el "click" noop)
+                          (.off jquery-el "click" noop))}
+     samples)))
