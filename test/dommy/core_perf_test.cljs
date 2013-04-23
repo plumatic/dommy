@@ -42,15 +42,10 @@
   (let [dommy-container (node :div)
         jquery-container (js/jQuery (node :div))
         el (node :div)]
-    #_(dommy/append! (sel1 :body) dommy-container)
-    #_(dommy/append! (sel1 :body) (aget jquery-container 0))
-    #_(perf-test-map
+    (perf-test-map
      {:dommy #(dommy/append! dommy-container el)
       :jquery #(.append jquery-container el)}
-     samples)
-    (clj->js
-     [(perf-test #(.append jquery-container el) samples)
-      (perf-test #(dommy/append! dommy-container el) samples)])))
+     samples)))
 
 (defn ^:export toggle-class-perf-test [samples]
   (let [el (node :div)
