@@ -1,8 +1,5 @@
 # dommy
 
-__Note__: There has been a breaking change to the namespaces in Dommy 0.1.0. All macros, either for manipulation
-or templating, are in `dommy.macros`.
-
 Dommy is no-nonsense ClojureScript DOM templating and manipulation library. Templating is based on Clojure's [Hiccup](https://github.com/weavejester/hiccup/) html templating library. It is similar to [Crate](https://github.com/ibdknox/crate), but is much faster (3-4x, see the performance comparison test `dommy.template-perf-test`). It also has a compile-time macro component that is significantly (5x) faster than the runtime templating, but requires most of your DOM structure to be expressed as nested vector literals (see 'Compile Macros' below). The compile-time macros are roughly 3x the speed of jQuery's templates and 12x faster than Crate.  
 
 DOM manipulation is inspired by jQuery, but adapted to be more Clojure-y and is also significantly faster (roughly 2x) for common tasks like toggling or adding classes (see this [performance test](https://github.com/Prismatic/dommy/tree/master/test/dommycore_test.clj)).
