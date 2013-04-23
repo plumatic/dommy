@@ -24,16 +24,19 @@
 
 (defn ^:export selector-perf-test [samples]
   (dommy/append! (sel1 :body) [:#c1 [:.c2 [:.c3]] [:.c3]])
-  (perf-test-map
-   {:dommy-body #(sel1 :body)
-    :jquery-body #(js/jQuery "body")
-    :dommy-id #(sel1 :#c1)
-    :jquery-id #(js/jQuery "#c1")
-    :dommy-class-sel1 #(sel1 :.c3)
-    :jquery-class-sel1 #(aget (js/jQuery ".c3") 0)
-    :dommy-multi-class #(sel ".c2, .c3")
-    :jquery-multi-class #(js/jQuery ".c2, .c3")}
-   samples))
+  (let [c2 (sel1 :.c2)]
+   (perf-test-map
+    {:dommy-body #(sel1 :body)
+     :jquery-body #(js/jQuery "body")
+     :dommy-id #(sel1 :#c1)
+     :jquery-id #(js/jQuery "#c1")
+     :dommy-class-sel1 #(sel1 :.c3)
+     :jquery-class-sel1 #(aget (js/jQuery ".c3") 0)
+     :dommy-multi-class #(sel ".c2, .c3")
+     :jquery-multi-class #(js/jQuery ".c2, .c3")
+     :dommy-nested-sel1 #(sel1 c2 :.c3)
+     :jquery-nested-sel1 #(js/jQuery ".c3" c2)}
+    samples)))
 
 (defn ^:export append-perf-test [samples]
   (let [dommy-container (node :div)
