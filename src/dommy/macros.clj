@@ -128,10 +128,11 @@
 
 (defmacro node [data]
   (cond
-    (vector? data) `(compile-compound ~data)
-    (keyword? data) `(compile-compound [~data])
-    (or (string? data) (:text (meta data))) `(.createTextNode js/document ~data)
-    :else `(dommy.template/->node-like ~data)))
+   (= (str data) "js/document") `js/document
+   (vector? data) `(compile-compound ~data)
+   (keyword? data) `(compile-compound [~data])
+   (or (string? data) (:text (meta data))) `(.createTextNode js/document ~data)
+   :else `(dommy.template/->node-like ~data)))
 
 (defmacro deftemplate [name args & node-forms]
   `(defn ~name ~args
