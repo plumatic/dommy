@@ -36,6 +36,26 @@
 (def show! attrs/show!)
 (def bounding-client-rect attrs/bounding-client-rect)
 
+(defn set-html!
+  [elem html]
+  (let [elem (template/->node-like elem)]
+    (set! (.-innerHTML elem) html)
+    elem))
+
+(defn html [elem]
+  (-> elem template/->node-like .-innerHTML))
+
+(defn set-text!
+  [elem text]
+  (let [elem (template/->node-like elem)
+        prop (if (.-textContent elem) "textContent" "innerText")]
+    (aset elem prop text)
+    elem))
+
+(defn text [elem]
+  (let [elem (template/->node-like elem)]
+    (or (.-textContent elem) (.-innerText elem))))
+
 (defn append!
   "append `child` to `parent`. 'parent' and 'child' should be node-like
    (work with dommy.template/->node-like). The node-like projection

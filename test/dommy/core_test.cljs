@@ -9,6 +9,30 @@
 
 (def body js/document.body)
 
+(deftest set-html!
+  (let [el (node [:span "foo" [:b "bar"]])]
+    (is= "foo<b>bar</b>" (dommy/html el))
+    (dommy/set-html! el "hello <i>world</i>")
+    (is= "hello <i>world</i>" (dommy/html el))
+    (dommy/set-html! el "")
+    (is= "" (dommy/html el))))
+
+(deftest text
+  (let [el (node [:span "foo" [:b "bar"]])]
+    (is= "foobar" (dommy/text el))
+    (dommy/set-style! el :display "none")
+    (is= "foobar" (dommy/text el))))
+
+(deftest set-text!
+  (let [el (node [:span])]
+    (is= "" (dommy/text el))
+    (dommy/set-text! el "test")
+    (is= "test" (dommy/text el))
+    (dommy/set-text! el "<i>woah</i>")
+    (is= "<i>woah</i>" (dommy/text el))
+    (dommy/set-text! el "")
+    (is= "" (dommy/text el))))
+
 (deftest append!
   (let [container (node [:div])
         el (node [:span "test"])]
