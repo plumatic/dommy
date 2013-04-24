@@ -10,6 +10,7 @@
    [dommy.macros :only [sel]])
   (:require
    [clojure.string :as str]
+   [dommy.utils :as utils]
    [dommy.attrs :as attrs]
    [dommy.template :as template]))
 
@@ -34,20 +35,6 @@
 (def hide! attrs/hide!)
 (def show! attrs/show!)
 (def bounding-client-rect attrs/bounding-client-rect)
-
-(defn dissoc-in
-  "Dissociate this keyseq from m, removing any empty maps created as a result
-   (including at the top-level)."
-  [m [k & ks]]
-  (when m
-    (if-let [res (and ks (dissoc-in (m k) ks))]
-      (assoc m k res)
-      (let [res (dissoc m k)]
-        (when-not (empty? res)
-          res)))))
-
-(defn ->Array [array-like]
-  (.call js/Array.prototype.slice array-like))
 
 (defn append!
   "append `child` to `parent`. 'parent' and 'child' should be node-like
@@ -260,7 +247,7 @@
             [actual-type _] (get special-listener-makers orig-type {orig-type identity})
             :let [keys [selector actual-type f]
                   canonical-f (get-in (event-listeners elem) keys)]]
-      (update-event-listeners! elem dissoc-in keys)
+      (update-event-listeners! elem utils/dissoc-in keys)
       (if (.-removeEventListener elem)
         (.removeEventListener elem (name actual-type) canonical-f)
         ;; For IE < 9

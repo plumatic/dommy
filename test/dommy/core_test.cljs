@@ -4,6 +4,7 @@
    [dommy.macros :only [sel sel1 node]])
   (:require
    [cljs-test.core :as test]
+   [dommy.utils :as utils]
    [dommy.core :as dommy]))
 
 (def body js/document.body)
@@ -359,7 +360,7 @@
     (is= (dommy/px el :width) 1)))
 
 (deftest ->Array
-  (let [array (dommy/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
+  (let [array (utils/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
     (is (instance? js/Array array))
     (is= (.-length array) 2)
     (is= (aget array 0) "lol")

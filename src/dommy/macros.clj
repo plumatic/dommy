@@ -44,14 +44,14 @@
 (defmacro by-class
   ([base data]
      (let [data (-> data name (str/replace "." ""))]
-       `(dommy.core/->Array
+       `(dommy.utils/->Array
          (.getElementsByClassName ~base ~data))))
   ([data]
      `(by-class js/document ~data)))
 
 (defmacro by-tag
   ([base data]
-     `(dommy.core/->Array
+     `(dommy.utils/->Array
        (.getElementsByTagName ~base ~(name data))))
   ([data]
      `(by-tag js/document ~data)))
@@ -75,7 +75,7 @@
        (condp #(%1 %2) (name data)
          class-selector? `(by-class ~base ~data)
          tag-selector? `(by-tag ~base ~data))
-       `(dommy.core/->Array
+       `(dommy.utils/->Array
          (.querySelectorAll (node ~base) ~(selector-form data)))))
   ([data]
      `(sel js/document ~data)))
