@@ -95,7 +95,7 @@
   js/Text
   (-elem [this] this)
 
-  js/HTMLDocument
+  js/Document
   (-elem [this] this)
 
   PersistentVector
