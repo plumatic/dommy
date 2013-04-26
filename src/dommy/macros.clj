@@ -45,14 +45,14 @@
   ([base data]
      (let [data (-> data name (str/replace "." ""))]
        `(dommy.utils/->Array
-         (.getElementsByClassName ~base ~data))))
+         (.getElementsByClassName (node ~base) ~data))))
   ([data]
      `(by-class js/document ~data)))
 
 (defmacro by-tag
   ([base data]
      `(dommy.utils/->Array
-       (.getElementsByTagName ~base ~(name data))))
+       (.getElementsByTagName (node ~base) ~(name data))))
   ([data]
      `(by-tag js/document ~data)))
 
