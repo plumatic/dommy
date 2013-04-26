@@ -56,27 +56,35 @@
   ([data]
      `(by-tag js/document ~data)))
 
+(defn query-selector [base data]
+  `(.querySelector (node ~base) ~(selector-form data)))
+
+(defn query-selector-all [base data]
+  `(dommy.utils/->Array
+    (.querySelectorAll (node ~base) ~(selector-form data))))
+
 (defmacro sel1
   ([base data]
-     (if (single-selector? data)
+     (if (constant? data)
        (condp #(%1 %2) (name data)
-         #(identical? "body" %) `js/document.body
-         #(identical? "head" %) `js/document.head
-         id-selector? `(by-id ~data)
+         #(= "body" %) `js/document.body
+         #(= "head" %) `js/document.head
+         #(and (= 'js/document base) (id-selector? %)) `(by-id ~data)
          class-selector? `(aget (by-class ~base ~data) 0)
-         tag-selector? `(aget (by-tag ~base ~data) 0))
-       `(.querySelector (node ~base) ~(selector-form data))))
+         tag-selector? `(aget (by-tag ~base ~data) 0)
+         (query-selector base data))
+       (query-selector base data)))
   ([data]
      `(sel1 js/document ~data)))
 
 (defmacro sel
   ([base data]
-     (if (single-selector? data)
+     (if (constant? data)
        (condp #(%1 %2) (name data)
          class-selector? `(by-class ~base ~data)
-         tag-selector? `(by-tag ~base ~data))
-       `(dommy.utils/->Array
-         (.querySelectorAll (node ~base) ~(selector-form data)))))
+         tag-selector? `(by-tag ~base ~data)
+         (query-selector-all base data))
+       (query-selector-all base data)))
   ([data]
      `(sel js/document ~data)))
 
