@@ -17,15 +17,15 @@
 
 (defn id-selector? [s]
   (and (constant? s)
-       (re-matches #"^#\w+$" (name s))))
+       (re-matches #"^#[\w-]+$" (name s))))
 
 (defn class-selector? [s]
   (and (constant? s)
-       (re-matches #"^\.\w+$" (name s))))
+       (re-matches #"^\.[a-z_-][a-z0-9_-]*$" (name s))))
 
 (defn tag-selector? [s]
   (and (constant? s)
-       (re-matches #"^\w+$" (name s))))
+       (re-matches #"^[a-z_-][a-z0-9_-]*$" (name s))))
 
 (defn selector [data]
   (cond
