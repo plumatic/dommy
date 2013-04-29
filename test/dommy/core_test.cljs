@@ -45,7 +45,10 @@
     (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
     (dommy/append! container [:b "-elem append!"])
     (is= 2 (.-childElementCount container))
-    (is= "B" (-> container .-lastChild .-tagName))))
+    (is= "B" (-> container .-lastChild .-tagName))
+    (dommy/append! container [:.foo] [:.bar])
+    (is= 4 (.-childElementCount container))
+    (is= "bar" (-> container .-lastChild .-className))))
 
 (deftest prepend!
   (let [container (node [:div])
@@ -59,7 +62,10 @@
     (is= "text node" (.-textContent (aget (.-childNodes container) 0)))
     (dommy/prepend! container [:b "-elem prepend!"])
     (is= 2 (.-childElementCount container))
-    (is= "B" (-> container .-firstChild .-tagName))))
+    (is= "B" (-> container .-firstChild .-tagName))
+    (dommy/prepend! container [:.foo] [:.bar])
+    (is= 4 (.-childElementCount container))
+    (is= "bar" (-> container .-firstChild .-className))))
 
 (deftest insert-before!
   (let [container (node [:div])

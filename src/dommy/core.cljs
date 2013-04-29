@@ -60,17 +60,29 @@
   "append `child` to `parent`. 'parent' and 'child' should be node-like
    (work with dommy.template/->node-like). The node-like projection
    of parent is returned after appending child."
-  [parent child]
-  (doto (template/->node-like parent)
-    (.appendChild (template/->node-like child))))
+  ([parent child]
+     (doto (template/->node-like parent)
+       (.appendChild (template/->node-like child))))
+
+  ([parent child & more-children]
+     (let [parent (template/->node-like parent)]
+       (doseq [c (cons child more-children)]
+         (append! parent c))
+       parent)))
 
 (defn prepend!
   "prepend `child` to `parent`, both node-like
    return ->node-like projection of `parent`"
-  [parent child]
-  (doto (template/->node-like parent)
-    (.insertBefore (template/->node-like child)
-                   (.-firstChild parent))))
+  ([parent child]
+     (doto (template/->node-like parent)
+       (.insertBefore (template/->node-like child)
+                      (.-firstChild parent))))
+
+  ([parent child & more-children]
+     (let [parent (template/->node-like parent)]
+       (doseq [c (cons child more-children)]
+         (prepend! parent c))
+       parent)))
 
 (defn insert-before!
   "insert `node` before `other`, both node-like,
