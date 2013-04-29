@@ -106,7 +106,7 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 ## Testing
 
 Dommy comes with reasonably extensive tests. To run them you must have 
-(phantomjs)[https://github.com/ariya/phantomjs/wiki/Quick-Start] installed and 
+[phantomjs](https://github.com/ariya/phantomjs/wiki/Quick-Start) installed and 
 build the `test` cljsbuild target, as follows:
 
     $ lein clean
