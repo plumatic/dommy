@@ -105,8 +105,14 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 
 ## Testing
 
-Dommy comes with reasonably extensive tests. To run them you must build the `test` cljsbuild target and open
-up the HTML file under `resources/dommy-tests.html` which will give you a visual representation of all tests. For
+Dommy comes with reasonably extensive tests. To run them you must have 
+(phantomjs)[https://github.com/ariya/phantomjs/wiki/Quick-Start] installed and 
+build the `test` cljsbuild target, as follows:
+
+    $ lein clean
+    $ lein cljsbuild test
+
+Next, open up the HTML file under `resources/dommy-tests.html` which will give you a visual representation of all tests. For
 all pull requests, please ensure your tests pass (or add test cases) before submitting. 
 
 
