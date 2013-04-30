@@ -109,10 +109,12 @@
        (remove-class! elem class))
      elem)))
 
-(defn- style-str [m]
-  (->> m
-       (map (fn [[k v]] (str (name k) ":" (name v) ";")))
-       (str/join " ")))
+(defn- style-str [x]
+  (if (string? x)
+    x
+    (->> x
+         (map (fn [[k v]] (str (name k) ":" (name v) ";")))
+         (str/join " "))))
 
 (defn set-style! [elem & kvs]
   (assert (even? (count kvs)))
