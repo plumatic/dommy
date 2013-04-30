@@ -56,6 +56,15 @@
   (let [elem (template/->node-like elem)]
     (or (.-textContent elem) (.-innerText elem))))
 
+(defn value [elem]
+  (-> elem template/->node-like .-value))
+
+(defn set-value!
+  [elem value]
+  (let [elem (template/->node-like elem)]
+    (set! (.-value elem) value)
+    elem))
+
 (defn append!
   "append `child` to `parent`. 'parent' and 'child' should be node-like
    (work with dommy.template/->node-like). The node-like projection
