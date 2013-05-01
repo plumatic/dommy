@@ -35,6 +35,8 @@
 (def hide! attrs/hide!)
 (def show! attrs/show!)
 (def bounding-client-rect attrs/bounding-client-rect)
+(def dissoc-in utils/dissoc-in)
+(def ->Array utils/->Array)
 
 (defn set-html!
   [elem html]
