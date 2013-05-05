@@ -20,8 +20,6 @@
 (def add-class! attrs/add-class!)
 (def remove-class! attrs/remove-class!)
 (def toggle-class! attrs/toggle-class!)
-(def set-style! attrs/set-style!)
-(def style attrs/style)
 (def set-attr! attrs/set-attr!)
 (def set-style! attrs/set-style!)
 (def set-px! attrs/set-px!)
