@@ -10,10 +10,10 @@
                               [:url "http://getprismatic.com"]
                               [:email "admin+oss@getprismatic.com"]
                               [:timezone "-8"]]]
-  :plugins [[lein-cljsbuild "0.3.0"]]
+  :plugins [[lein-cljsbuild "0.3.2"]]
   :hooks [leiningen.cljsbuild]
   :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
-                 [prismatic/cljs-test "0.0.5"]]
+                 [prismatic/cljs-test "0.0.6"]]
   :cljsbuild
     {:builds
      {:dev  {:source-paths ["src"]
