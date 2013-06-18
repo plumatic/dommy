@@ -88,15 +88,6 @@
   ([data]
      `(sel js/document ~data)))
 
-(defn compile-classes-attr
-  [class-vals]
-  (->> class-vals
-       (map (fn [v]
-              (if (or (var? v)
-                      (keyword? v))
-                (name v)
-                v)))
-       (str/join " " )))
 
 (defmacro compile-add-attr!
   "compile-time add attribute"
@@ -106,7 +97,11 @@
      ~(cond
        (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
        (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.core/style-str ~v))
-       (identical? k :classes) `(compile-add-attr! ~d :class ~(compile-classes-attr v))
+       ;; If we can compile into a single string at compile time, then make single string
+       ;; and set it. Otherwise, need to fall back to calling runtime set-attr! for each class
+       (identical? k :classes) (if (every? #(or (string? %) (keyword? %)) v)
+                                 `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
+                                 `(compile-add-attr! ~d :class (str/join " " ~v)))
        :else `(.setAttribute ~d ~(name k) ~v))))
 
 (defn parse-keyword

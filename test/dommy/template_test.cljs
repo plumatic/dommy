@@ -7,7 +7,7 @@
    [dommy.template :as template]))
 
 
-(deftest simple-template 
+(deftest simple-template
   (is= "B" (-> :b template/node .-tagName))
   (is= "some text" (-> "some text" template/node .-textContent))
   ;; unfortunately to satisfy the macro gods, you need to
@@ -21,7 +21,7 @@
       (is (zero? (-> e .-children .-length)))))
   (let [e1 (template/node [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])
         e2 (node
-              [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])]
+            [:a {:classes ["class1" "class2"] :href "http://somelink"} "anchor"])]
     (doseq [e [e1 e2]] (is (-> e .-tagName (= "A")))
            (is= "anchor" (.-textContent e))
            (is= "http://somelink" (.getAttribute e "href"))
@@ -63,12 +63,12 @@
     (is=  e (template/node e)))
   (let [e1 (template/base-element :#id1.class1)
         e2 (node :#id1.class1)]
-    (doseq [e [e1 e2]]      
+    (doseq [e [e1 e2]]
       (is= (.-outerHTML (template/base-element :div#id1.class1))
            (.-outerHTML (template/base-element :#id1.class1))))))
 
 (deftest nested-template-test
-   ;; test html for example list form
+  ;; test html for example list form
   ;; note: if practice you can write the direct form (without the list) you should.
   (let [spans (for [i (range 2)] [:span (str "span" i)])
         end [:span.end "end"]
@@ -79,12 +79,12 @@
       (is (-> e .-textContent (= "span0span1end")))
       (is (-> e .-className (= "class1")))
       (is (-> e .-childNodes .-length (= 3)))
-      (is (-> e .-innerHTML 
-                (= "<span>span0</span><span>span1</span><span class=\"end\">end</span>")))
+      (is (-> e .-innerHTML
+              (= "<span>span0</span><span>span1</span><span class=\"end\">end</span>")))
       (is (-> e .-childNodes (aget 0) .-innerHTML (= "span0")))
       (is (-> e .-childNodes (aget 1) .-innerHTML (= "span1")))
       (is (-> e .-childNodes (aget 2) .-innerHTML (= "end")))))
-  
+
   ;; test equivalence of "direct inline" and list forms
   (let [spans (for [i (range 2)] [:span (str "span" i)])
         end   [:span.end "end"]
@@ -100,9 +100,9 @@
                      [e22 e11]]]
       (is (= (.-innerHTML e1) (.-innerHTML e2))))))
 
-(deftest boolean 
+(deftest boolean
   (let [e1 (template/node [:option {:selected true} "some text"])
-        e1c (node [:option {:selected true} "some text"]) 
+        e1c (node [:option {:selected true} "some text"])
         e2 (template/node [:option {:selected false} "some text"])
         e2c (node [:option {:selected false} "some text"])
         e3 (template/node [:option {:selected nil} "some text"])
@@ -183,12 +183,12 @@
 (deftest nil-template-test
   (is= 0 (-> (nil-template) .-childNodes .-length)))
 
-(deftest ->node-like  
+(deftest ->node-like
   (is=
    "<div><div class=\"class1\"></div><div class=\"class2\"></div><div class=\"class3\"></div></div>"
    (.-outerHTML
     (doto (template/node [:div])
-      (.appendChild 
+      (.appendChild
        (template/->node-like (list :.class1 :.class2 :.class3)))))))
 
 (deftemplate span-wrapper [content]
@@ -197,3 +197,16 @@
 (deftest empty-string-in-template
   (is= "<span></span>"
        (.-outerHTML (span-wrapper ""))))
+
+
+(deftemplate classes-attr-template [x y]
+  [:div
+   {:classes [(str "class-" x) (str "class-" y)]}])
+
+(deftemplate classes-compilable-attr-template []
+  [:div
+   {:classes [:c1 :c2]}])
+
+(deftest classes-attr
+  (is= "class-42 class-43" (.-className (classes-attr-template 42 43)))
+  (is= "c1 c2" (.-className (classes-compilable-attr-template))))
