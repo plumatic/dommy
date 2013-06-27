@@ -83,8 +83,9 @@
   "prepend `child` to `parent`, both node-like
    return ->node-like projection of `parent`"
   ([parent child]
-     (doto (template/->node-like parent)
-       (.insertBefore (template/->node-like child)
+     (let [parent (template/->node-like parent)]
+       (.insertBefore parent
+                      (template/->node-like child)
                       (.-firstChild parent))))
 
   ([parent child & more-children]
