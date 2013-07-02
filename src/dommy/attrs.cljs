@@ -1,6 +1,6 @@
 (ns dommy.attrs
   (:use-macros
-    [dommy.macros :only [node]])
+   [dommy.macros :only [node]])
   (:require
    [clojure.string :as str]))
 
@@ -97,17 +97,18 @@
    (toggle-class! elem class add?) will add-class! if add? is truthy,
    otherwise it will remove-class!"
   ([elem class]
-   (let [elem (node elem)]
-     (if-let [class-list (.-classList elem)]
-       (.toggle class-list class)
-       (toggle-class! elem class (not (has-class? elem class))))
-     elem))
+     (let [elem (node elem)
+           class (name class)]
+       (if-let [class-list (.-classList elem)]
+         (.toggle class-list class)
+         (toggle-class! elem class (not (has-class? elem class))))
+       elem))
   ([elem class ^boolean add?]
-   (let [elem (node elem)]
-     (if add?
-       (add-class! elem class)
-       (remove-class! elem class))
-     elem)))
+     (let [elem (node elem)]
+       (if add?
+         (add-class! elem class)
+         (remove-class! elem class))
+       elem)))
 
 (defn- style-str [x]
   (if (string? x)
@@ -152,35 +153,35 @@
                        :name \"some-name\")"
   ([elem k] (set-attr! (node elem) k "true"))
   ([elem k v]
-   (when v
-     (if (fn? v)
-       (doto (node elem)
-         (aset (name k) v))
-       (doto (node elem)
-         (.setAttribute
-           (name k)
-           (if (identical? k :style)
-             (style-str v)
-             v))))))
+     (when v
+       (if (fn? v)
+         (doto (node elem)
+           (aset (name k) v))
+         (doto (node elem)
+           (.setAttribute
+            (name k)
+            (if (identical? k :style)
+              (style-str v)
+              v))))))
   ([elem k v & kvs]
-   (assert (even? (count kvs)))
-   (let [elem (node elem)]
-     (doseq [[k v] (->> kvs (partition 2) (cons [k v]))]
-       (set-attr! elem k v))
-     elem)))
+     (assert (even? (count kvs)))
+     (let [elem (node elem)]
+       (doseq [[k v] (->> kvs (partition 2) (cons [k v]))]
+         (set-attr! elem k v))
+       elem)))
 
 (defn remove-attr!
   ([elem k]
-   (let [elem (node elem)]
-     (if (#{:class :classes} k)
-       (set! (.-className elem) "")
-       (.removeAttribute elem (name k)))
-     elem))
+     (let [elem (node elem)]
+       (if (#{:class :classes} k)
+         (set! (.-className elem) "")
+         (.removeAttribute elem (name k)))
+       elem))
   ([elem k & ks]
-   (let [elem (node elem)]
-     (doseq [k (cons k ks)]
-       (remove-attr! elem k))
-     elem)))
+     (let [elem (node elem)]
+       (doseq [k (cons k ks)]
+         (remove-attr! elem k))
+       elem)))
 
 (defn attr [elem k]
   (when k
@@ -193,12 +194,12 @@
   "Display or hide the given `elem`. Takes an optional boolean `show?`
    indicating whether to show or hide `elem`."
   ([elem ^boolean show?]
-   (doto (node elem)
-     (-> .-style .-display (set! (if show? "" "none")))))
+     (doto (node elem)
+       (-> .-style .-display (set! (if show? "" "none")))))
   ([elem]
-   (let [elem (node elem)]
-     (toggle! elem (hidden? elem))
-     elem)))
+     (let [elem (node elem)]
+       (toggle! elem (hidden? elem))
+       elem)))
 
 (defn hide! [elem]
   (doto (node elem) (toggle! false)))
