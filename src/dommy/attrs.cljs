@@ -187,6 +187,15 @@
   (when k
     (.getAttribute (node elem) (name k))))
 
+(defn toggle-attr!
+  ([elem k]
+     (toggle-attr! elem k (boolean (attr elem k))))
+  ([elem k ^boolean add?]
+     (let [elem (node elem)]
+       (if add?
+         (set-attr! elem k)
+         (remove-attr! elem k)))))
+
 (defn ^boolean hidden? [elem]
   (identical? "none" (-> (node elem) .-style .-display)))
 

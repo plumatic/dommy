@@ -27,6 +27,7 @@
 (def style-str attrs/style-str)
 (def style attrs/style)
 (def remove-attr! attrs/remove-attr!)
+(def toggle-attr! attrs/toggle-attr!)
 (def attr attrs/attr)
 (def hidden? attrs/hidden?)
 (def toggle! attrs/toggle!)
@@ -156,22 +157,22 @@
    time of this `matches-pred` call (may return outdated results
    if you fuck with the DOM)"
   ([base selector]
-   (let [matches (sel (template/->node-like base) selector)]
-     (fn [elem]
-       (-> matches (.indexOf elem) (>= 0)))))
+     (let [matches (sel (template/->node-like base) selector)]
+       (fn [elem]
+         (-> matches (.indexOf elem) (>= 0)))))
   ([selector]
-   (matches-pred js/document selector)))
+     (matches-pred js/document selector)))
 
 (defn closest
   "closest ancestor of `node` (up to `base`, if provided)
    that matches `selector`"
   ([base elem selector]
-   (let [base (template/->node-like base)
-         elem (template/->node-like elem)]
-     (->> (ancestor-nodes elem)
-          (take-while #(not (identical? % base)))
-          (filter (matches-pred base selector))
-          first)))
+     (let [base (template/->node-like base)
+           elem (template/->node-like elem)]
+       (->> (ancestor-nodes elem)
+            (take-while #(not (identical? % base)))
+            (filter (matches-pred base selector))
+            first)))
   ([elem selector]
      (first (filter (matches-pred selector) (ancestor-nodes (template/->node-like elem))))))
 
