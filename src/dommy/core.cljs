@@ -34,6 +34,7 @@
 (def hide! attrs/hide!)
 (def show! attrs/show!)
 (def bounding-client-rect attrs/bounding-client-rect)
+(def scroll-into-view attrs/scroll-into-view)
 (def dissoc-in utils/dissoc-in)
 (def ->Array utils/->Array)
 
