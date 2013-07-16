@@ -141,6 +141,11 @@
     (doto (.-parentNode elem)
       (.removeChild elem))))
 
+(defn clear!
+  "clears all children from `elem`"
+  [elem]
+  (set! (.-innerHTML (template/->node-like elem)) ""))
+
 (defn selector [data]
   (cond
    (coll? data) (clojure.string/join " " (map selector data))
