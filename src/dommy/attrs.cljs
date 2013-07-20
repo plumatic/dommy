@@ -230,9 +230,6 @@
   [elem align-with-top?]
   (let [elem (node elem)
         top (:top (bounding-client-rect elem))]
-    (js/console.log js/document.body.scrollTop js/window.innerHeight top (.-offsetHeight elem)
-                    (+ js/document.body.scrollTop js/window.innerHeight)
-                    (+ top (.-offsetHeight elem)))
     (when (< js/window.innerHeight
              (+ top (.-offsetHeight elem)))
       (.scrollIntoView elem align-with-top?))))
