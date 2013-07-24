@@ -214,8 +214,9 @@
   "fires f if event.target is found with `selector`"
   [elem selector f]
   (fn [event]
-    (when-let [selected-target (closest (template/->node-like elem) (.-target event) selector)]
-      (set! (.-selectedTarget event) selected-target)
+    (let [selected-target (closest (template/->node-like elem) (.-target event) selector)]
+      (when (and selected-target (not (attr selected-target :disabled)))
+        (set! (.-selectedTarget event) selected-target))
       (f event))))
 
 (defn- event-listeners
