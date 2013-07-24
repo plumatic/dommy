@@ -55,8 +55,7 @@
     elem))
 
 (defn text [elem]
-  (let [elem (template/->node-like elem)]
-    (or (.-textContent elem) (.-innerText elem))))
+  (or (.-textContent elem) (.-innerText elem)))
 
 (defn value [elem]
   (-> elem template/->node-like .-value))
