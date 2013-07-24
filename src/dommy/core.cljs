@@ -216,8 +216,8 @@
   (fn [event]
     (let [selected-target (closest (template/->node-like elem) (.-target event) selector)]
       (when (and selected-target (not (attr selected-target :disabled)))
-        (set! (.-selectedTarget event) selected-target))
-      (f event))))
+        (set! (.-selectedTarget event) selected-target)
+        (f event)))))
 
 (defn- event-listeners
   "Returns a nested map of event listeners on `nodes`"
