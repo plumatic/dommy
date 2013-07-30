@@ -7,7 +7,7 @@
    passed nested data structure it converts to a fresh DOM node. It falls back to the PElement
    protocol (see dommy.template) so is extensible."
   (:use-macros
-   [dommy.macros :only [sel]])
+   [dommy.macros :only [sel sel1]])
   (:require
    [clojure.string :as str]
    [dommy.utils :as utils]
@@ -149,6 +149,20 @@
   (cond
    (coll? data) (clojure.string/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
+
+(defn selector-map [template key-selectors-map]
+  (let [container (dommy.template/->node-like template)]
+    (assert (not (contains? key-selectors-map :container)))
+    (->>  key-selectors-map
+          (map (fn [[k v]]
+                 [k
+                  (if (:live (meta v))
+                    (reify
+                      IDeref
+                      (-deref [this] (sel container v)))
+                    (sel1 container v))]))
+          (into {})
+          (merge {:container container}))))
 
 (defn ancestor-nodes
   "a lazy seq of the ancestors of `node`"

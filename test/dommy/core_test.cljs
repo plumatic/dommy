@@ -127,6 +127,23 @@
     (dommy/append! body bar-el)
     (is= (sel1 bar) bar-el)))
 
+(deftest selector-map-test
+  (let [{:keys [container, header, todo-items]}
+        (dommy/selector-map
+         [:.todo-list
+          [:h1.header "Name"]
+          [:ul
+           [:li.todo-item "item1"]
+           [:li.todo-item "item2"]]]
+         {:header :.header :todo-items ^:live [:li.todo-item]})]
+    (is= (.-tagName container) "DIV")
+    (is (dommy/has-class? container "todo-list"))
+    (is= (.-tagName header) "H1")
+    (is= (dommy/text header) "Name")
+    (is= 2 (count @todo-items))
+    (dommy/append! (dommy.macros/sel1 container :ul) [:li.todo-item "item3"])
+    (is= 3 (count @todo-items))))
+
 (deftest simple-class
   (let [el-simple (node [:div.foo])
         el-complex (node [:div.c1.c.c3.c.c4.d?])]
@@ -340,7 +357,7 @@
         (fn [evt-type relatedTarget]
           (let [orig-count @counter]
             (dommy/fire! child evt-type
-                   #(doto % (aset "relatedTarget" relatedTarget)))
+                         #(doto % (aset "relatedTarget" relatedTarget)))
             (is (some #(= @counter (% orig-count)) [identity inc])
                 "counter value is valid (just being defensive)")
             (= @counter (inc orig-count))))
