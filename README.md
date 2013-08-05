@@ -15,8 +15,10 @@ Add the following dependency to your `project.clj`:
 DOM nodes are selected using macros, which expand to the correct native dom calls. Because selectors don't wrap returned nodes, there is a distinction between single and multiple selections. A selector can be a keyword, string or vector.
 
 ```clojure
-(:use-macros
- [dommy.macros :only [sel sel1]])
+(ns …
+  (:require [dommy.core])
+  (:use-macros
+    [dommy.macros :only [sel sel1]]))
 
 (sel1 :body) ; => document.body
 (sel1 :#header) ; => document.getElementById("header")
@@ -58,7 +60,10 @@ Dom manipulation is defined in [dommy.core](https://github.com/Prismatic/dommy/b
 Templating syntax is based on [Hiccup](https://github.com/weavejester/hiccup/), a great HTML library for Clojure. Instead of returning a string of html, dommy's `node` macro returns a DOM node.
 
 ```clojure
-(:use-macros [dommy.macros :only [node]])
+(ns …
+  (:require [dommy.core])
+  (:use-macros
+    [dommy.macros :only [node]]))
 
 (node
   [:div#id.class1
@@ -76,7 +81,10 @@ Templating syntax is based on [Hiccup](https://github.com/weavejester/hiccup/), 
 The `deftemplate` macro is useful syntactic sugar for defining a function that returns a DOM node.
 
 ```clojure
-(:use-macros [dommy.macros :only [node deftemplate]])
+(ns …
+  (:require [dommy.core])
+  (:use-macros
+    [dommy.macros :only [node deftemplate]]))
 
 (defn simple-template [cat]
   (node [:img {:src cat}]))
