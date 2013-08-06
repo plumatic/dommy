@@ -3,6 +3,9 @@
    [clojure.string :as str]
    [dommy.attrs :as attrs]))
 
+(def +svg-ns+ "http://www.w3.org/2000/svg")
+(def +svg-tags+ #{"svg" "line" })
+
 (defprotocol PElement
   (-elem [this] "return the element representation of this"))
 
@@ -22,10 +25,12 @@
   (let [node-str (name node-key)
         base-idx (next-css-index node-str 0)
         tag (cond
-              (> base-idx 0) (.substring node-str 0 base-idx)
-              (zero? base-idx) "div"
-              :else node-str)
-        node (.createElement js/document tag)]
+             (> base-idx 0) (.substring node-str 0 base-idx)
+             (zero? base-idx) "div"
+             :else node-str)
+        node (if (+svg-tags+ tag)
+               (.createElementNS js/document +svg-ns+ tag)
+               (.createElement js/document tag))]
     (when (>= base-idx 0)
       (loop [str (.substring node-str base-idx)]
         (let [next-idx (next-css-index str 1)
@@ -47,20 +52,20 @@
   ([data]
      (->document-fragment (.createDocumentFragment js/document) data))
   ([result-frag data]
-      (cond
-       (satisfies? PElement data)
-       (do (.appendChild result-frag (-elem data))
-           result-frag)
+     (cond
+      (satisfies? PElement data)
+      (do (.appendChild result-frag (-elem data))
+          result-frag)
 
-       (seq? data)
-       (do (doseq [child data] (->document-fragment result-frag child))
-           result-frag)
+      (seq? data)
+      (do (doseq [child data] (->document-fragment result-frag child))
+          result-frag)
 
-       (nil? data)
-       result-frag
+      (nil? data)
+      result-frag
 
-       :else
-       (throw-unable-to-make-node data))))
+      :else
+      (throw-unable-to-make-node data))))
 
 (defn ->node-like
   "take data and return DOM node if it satisfies PElement and tries to
@@ -74,9 +79,9 @@
   "element with either attrs or nested children [:div [:span \"Hello\"]]"
   [[tag-name maybe-attrs & children]]
   (let [n (base-element tag-name)
-        attrs     (when (and (map? maybe-attrs)
-                             (not (satisfies? PElement maybe-attrs)))
-                    maybe-attrs)
+        attrs (when (and (map? maybe-attrs)
+                         (not (satisfies? PElement maybe-attrs)))
+                maybe-attrs)
         children  (if attrs children (cons maybe-attrs children))]
     (doseq [[k v] attrs]
       (case k
@@ -99,6 +104,9 @@
   js/Document
   (-elem [this] this)
 
+  js/SVGElement
+  (-elem [this] this)
+
   PersistentVector
   (-elem [this] (compound-element this))
 
@@ -107,9 +115,9 @@
 
   string
   (-elem [this]
-         (if (keyword? this)
-           (base-element this)
-           (.createTextNode js/document (str this)))))
+    (if (keyword? this)
+      (base-element this)
+      (.createTextNode js/document (str this)))))
 
 (try
   (extend-protocol PElement
