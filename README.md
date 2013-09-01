@@ -17,6 +17,9 @@ DOM nodes are selected using macros, which expand to the correct native dom call
 ```clojure
 (:use-macros
  [dommy.macros :only [sel sel1]])
+(:require
+ [dommy.utils :as utils]
+ [dommy.core :as dommy])
 
 (sel1 :body) ; => document.body
 (sel1 :#header) ; => document.getElementById("header")
