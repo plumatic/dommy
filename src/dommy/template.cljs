@@ -4,7 +4,8 @@
    [dommy.attrs :as attrs]))
 
 (def +svg-ns+ "http://www.w3.org/2000/svg")
-(def +svg-tags+ #{"svg" "line" })
+(def +svg-tags+ #{"svg" "g" "rect" "circle" "clipPath" "path" "line" "polygon" "polyline" "text" "textPath"})
+
 
 (defprotocol PElement
   (-elem [this] "return the element representation of this"))
