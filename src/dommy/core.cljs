@@ -1,5 +1,5 @@
 (ns dommy.core
-  "Core DOM manipulaiton function
+  "Core DOM manipulation functions
 
    Many of these functions take something which is node-like. Node-like
    refers to the result of calling `dommy.template/->node-like` on the object. For
