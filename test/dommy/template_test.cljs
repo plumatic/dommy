@@ -210,3 +210,7 @@
 (deftest classes-attr
   (is= "class-42 class-43" (.-className (classes-attr-template 42 43)))
   (is= "c1 c2" (.-className (classes-compilable-attr-template))))
+
+(deftest namespaces
+  (is= "http://www.w3.org/1999/xhtml" (.-namespaceURI (node [:p])))
+  (is= "http://www.w3.org/2000/svg" (.-namespaceURI (node [:circle]))))
