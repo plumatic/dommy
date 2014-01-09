@@ -7,7 +7,7 @@ A ClojureScript DOM manipulation, templating and event library.
 Add the following dependency to your `project.clj`:
 
 ```clojure
-[prismatic/dommy "0.1.1"]
+[prismatic/dommy "0.1.2"]
 ```
 
 ### Selection
