@@ -115,11 +115,10 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 
 ### Events
 
-Listening for events in dommy is pretty straightforward.
+Listening for events in dommy is pretty straightforward. `listen!` takes a DOM node, a macro describing the event and the function to run in the case of that event being triggered.
 
 ```clojure
 (ns …
-  (:require [dommy.core])
   (:require
     [dommy.core :as dommy])
   (:use-macros
