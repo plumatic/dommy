@@ -117,7 +117,7 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 
 Listening for events in dommy is pretty straightforward.
 
-```
+```clojure
 (defn clickEvent [event]
   (.log js/console "You have clicked the button! Congratulations"))
 
