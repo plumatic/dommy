@@ -113,6 +113,18 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 (node [:a ^:attrs (merge m1 m2)])
 ```
 
+### Events
+
+Listening for events in dommy is pretty straightforward.
+
+```
+(defn clickEvent [event]
+  (.log js/console "You have clicked the button! Congratulations"))
+
+(dommy/listen! (sel1 :#clickButton)
+                :click clickEvent)
+```
+
 ## Testing
 
 Dommy comes with reasonably extensive tests. To run them 
