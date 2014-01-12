@@ -118,8 +118,15 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 Listening for events in dommy is pretty straightforward.
 
 ```clojure
+(ns …
+  (:require [dommy.core])
+  (:require
+    [dommy.core :as dommy])
+  (:use-macros
+    [dommy.macros :only [sel1]]))
+
 (defn clickEvent [event]
-  (.log js/console "You have clicked the button! Congratulations"))
+    (.log js/console "You have clicked the button! Congratulations"))
 
 (dommy/listen! (sel1 :#clickButton)
                 :click clickEvent)
