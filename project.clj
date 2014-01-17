@@ -1,6 +1,6 @@
 (defproject prismatic/dommy "0.1.3-SNAPSHOT"
   :clojurescript? true
-  :description "No nonsense Clojurescript dom templating and (soon) manipulation"
+  :description "Clojurescript DOM templating and manipulation"
   :url "https://github.com/prismatic/dommy"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -18,11 +18,7 @@
                  [com.cemerick/clojurescript.test "0.2.1"]]
   :cljsbuild
   {:builds
-   {:dev  {:source-paths ["src"]
-           :compiler {:output-to "target/main.js"
-                      :optimizations :whitespace
-                      :pretty-print true}}
-    :test {:source-paths ["src" "test"]
+   {:test {:source-paths ["src" "test"]
            :incremental? true
            :compiler {:output-to "target/unit-test.js"
                       :optimizations :whitespace
