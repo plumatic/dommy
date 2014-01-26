@@ -122,7 +122,7 @@
   (let [elem (node elem)
         style (.-style elem)]
     (doseq [[k v] (partition 2 kvs)]
-      (aset style (name k) v))
+      (.setProperty style (name k) v))
     elem))
 
 (defn style [elem k]
