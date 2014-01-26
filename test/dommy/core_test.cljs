@@ -41,9 +41,7 @@
   (let [el (node [:select (for [n (range 1 10)] [:option n])])]
     (is= "1" (dommy/value el))
     (dommy/set-value! el "5")
-    (is= "5" (dommy/value el))
-    (dommy/set-value! el "")
-    (is= "" (dommy/value el))))
+    (is= "5" (dommy/value el))))
 
 (deftest append!
   (let [container (node [:div])
