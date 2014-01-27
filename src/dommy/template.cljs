@@ -93,19 +93,10 @@
     n))
 
 (extend-protocol PElement
-  js/HTMLElement
-  (-elem [this] this)
-
-  js/DocumentFragment
+  js/Element
   (-elem [this] this)
 
   js/Text
-  (-elem [this] this)
-
-  js/Document
-  (-elem [this] this)
-
-  js/SVGElement
   (-elem [this] this)
 
   PersistentVector
@@ -120,12 +111,38 @@
       (base-element this)
       (.createTextNode js/document (str this)))))
 
-(try
+;; extend additional prototypes, which might not be available on all
+;; versions of IE or phantom
+
+(when (exists? js/HTMLElement)
+  (extend-protocol PElement
+    js/HTMLElement
+    (-elem [this] this)))
+
+(when (exists? js/DocumentFragment)
+  (extend-protocol PElement
+    js/DocumentFragment
+    (-elem [this] this)))
+
+(when (exists? js/Document)
+  (extend-protocol PElement
+    js/Document
+    (-elem [this] this)))
+
+(when (exists? js/HTMLDocument)
+  (extend-protocol PElement
+    js/HTMLDocument
+    (-elem [this] this)))
+
+(when (exists? js/SVGElement)
+  (extend-protocol PElement
+    js/SVGElement
+    (-elem [this] this)))
+
+(when (exists? js/Window)
   (extend-protocol PElement
     js/Window
-    (-elem [this] this))
-  (catch js/ReferenceError _
-    (.log js/console "PElement: js/Window not defined by browser, skipping it... (running on phantomjs?)")))
+    (-elem [this] this)))
 
 (defn node [data]
   (if (satisfies? PElement data)
