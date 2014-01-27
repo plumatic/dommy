@@ -133,15 +133,9 @@ Listening for events in dommy is pretty straightforward. `listen!` takes a DOM n
 
 ## Testing
 
-Dommy comes with reasonably extensive tests. To run them 
-first build the `test` cljsbuild target, as follows:
+For all pull requests, please ensure your tests pass (or add test cases) before submitting. 
 
-    $ lein clean
-    $ lein cljsbuild auto test
-
-Next, open up the HTML file under `resources/dommy-tests.html` which will give you a visual representation of all tests. For
-all pull requests, please ensure your tests pass (or add test cases) before submitting. 
-
+    $ lein test
 
 ## License
 
