@@ -3,10 +3,15 @@
 
 (declare node)
 
+
 (defn string-or-keyword [s]
   (if (keyword? s)
     (-> (str s) (subs 1))
     s))
+
+(def +default-ns+ "http://www.w3.org/1999/xhtml")
+(def +svg-ns+ "http://www.w3.org/2000/svg")
+(def +svg-tags+ #{"svg" "g" "rect" "circle" "clipPath" "path" "line" "polygon" "polyline" "text" "textPath"})
 
 (defn constant? [data]
   (some #(% data) [number? keyword? string?]))
@@ -127,8 +132,9 @@
                     (first rest))
         children (drop (if (or literal-attrs var-attrs) 1 0) rest)
         [tag class-str id] (parse-keyword node-key)
-        dom-sym (gensym "dom")]
-    `(let [~dom-sym (.createElement js/document ~(string-or-keyword tag))]
+        dom-sym (gensym "dom")
+        element-ns (if (+svg-tags+ tag) +svg-ns+ +default-ns+)]
+    `(let [~dom-sym (.createElementNS js/document ~element-ns ~(string-or-keyword tag))]
        ~@(when-not (empty? class-str)
            [`(set! (.-className ~dom-sym) ~class-str)])
        ~@(when id
