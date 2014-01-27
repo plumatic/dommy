@@ -3,6 +3,11 @@
 
 (declare node)
 
+(defn string-or-keyword [s]
+  (if (keyword? s)
+    (-> (str s) (subs 1))
+    s))
+
 (defn constant? [data]
   (some #(% data) [number? keyword? string?]))
 
@@ -13,24 +18,24 @@
 
 (defn single-selector? [data]
   (and (constant? data)
-       (re-matches #"^\S+$" (name data))))
+       (re-matches #"^\S+$" (string-or-keyword data))))
 
 (defn id-selector? [s]
   (and (constant? s)
-       (re-matches #"^#[\w-]+$" (name s))))
+       (re-matches #"^#[\w-]+$" (string-or-keyword s))))
 
 (defn class-selector? [s]
   (and (constant? s)
-       (re-matches #"^\.[a-z_-][a-z0-9_-]*$" (name s))))
+       (re-matches #"^\.[a-z_-][a-z0-9_-]*$" (string-or-keyword s))))
 
 (defn tag-selector? [s]
   (and (constant? s)
-       (re-matches #"^[a-z_-][a-z0-9_-]*$" (name s))))
+       (re-matches #"^[a-z_-][a-z0-9_-]*$" (string-or-keyword s))))
 
 (defn selector [data]
   (cond
    (coll? data) (str/join " " (map selector data))
-   (constant? data) (name data)))
+   (constant? data) (string-or-keyword data)))
 
 (defn selector-form [data]
   (if (constant? data)
@@ -38,12 +43,12 @@
     `(dommy.core/selector ~data)))
 
 (defmacro by-id [id]
-  (let [id (-> id name (str/replace #"#" ""))]
+  (let [id (-> id string-or-keyword (str/replace #"#" ""))]
     `(js/document.getElementById ~id)))
 
 (defmacro by-class
   ([base data]
-     (let [data (-> data name (str/replace "." ""))]
+     (let [data (-> data string-or-keyword (str/replace "." ""))]
        `(dommy.utils/->Array
          (.getElementsByClassName (node ~base) ~data))))
   ([data]
@@ -52,7 +57,7 @@
 (defmacro by-tag
   ([base data]
      `(dommy.utils/->Array
-       (.getElementsByTagName (node ~base) ~(name data))))
+       (.getElementsByTagName (node ~base) ~(string-or-keyword data))))
   ([data]
      `(by-tag js/document ~data)))
 
@@ -66,7 +71,7 @@
 (defmacro sel1
   ([base data]
      (if (constant? data)
-       (condp #(%1 %2) (name data)
+       (condp #(%1 %2) (string-or-keyword data)
          #(= "body" %) `js/document.body
          #(= "head" %) `js/document.head
          #(and (= 'js/document base) (id-selector? %)) `(by-id ~data)
@@ -80,7 +85,7 @@
 (defmacro sel
   ([base data]
      (if (constant? data)
-       (condp #(%1 %2) (name data)
+       (condp #(%1 %2) (string-or-keyword data)
          class-selector? `(by-class ~base ~data)
          tag-selector? `(by-tag ~base ~data)
          (query-selector-all base data))
@@ -96,19 +101,19 @@
   `(when ~v
      ~(cond
        (identical? k :class) `(set! (.-className ~d) (.trim (str (.-className ~d) " " ~v)))
-       (identical? k :style) `(.setAttribute ~d ~(name k) (dommy.core/style-str ~v))
+       (identical? k :style) `(.setAttribute ~d ~(string-or-keyword k) (dommy.core/style-str ~v))
        ;; If we can compile into a single string at compile time, then make single string
        ;; and set it. Otherwise, need to fall back to calling runtime set-attr! for each class
        (identical? k :classes) (if (every? #(or (string? %) (keyword? %)) v)
-                                 `(compile-add-attr! ~d :class ~(str/join " " (map name v)))
+                                 `(compile-add-attr! ~d :class ~(str/join " " (map string-or-keyword v)))
                                  `(compile-add-attr! ~d :class (str/join " " ~v)))
-       :else `(.setAttribute ~d ~(name k) ~v))))
+       :else `(.setAttribute ~d ~(string-or-keyword k) ~v))))
 
 (defn parse-keyword
   "return pair [tag class-str id] where tag is dom tag and attrs
    are key-value attribute pairs from css-style dom selector"
   [node-key]
-  (let [node-str (name node-key)
+  (let [node-str (string-or-keyword node-key)
         node-tag (second (re-find #"^([^.\#]+)[.\#]?" node-str))
         classes (map #(.substring ^String % 1) (re-seq #"\.[^.*]*" node-str))
         id (first (map #(.substring ^String % 1) (re-seq #"#[^.*]*" node-str)))]
@@ -123,7 +128,7 @@
         children (drop (if (or literal-attrs var-attrs) 1 0) rest)
         [tag class-str id] (parse-keyword node-key)
         dom-sym (gensym "dom")]
-    `(let [~dom-sym (.createElement js/document ~(name tag))]
+    `(let [~dom-sym (.createElement js/document ~(string-or-keyword tag))]
        ~@(when-not (empty? class-str)
            [`(set! (.-className ~dom-sym) ~class-str)])
        ~@(when id
