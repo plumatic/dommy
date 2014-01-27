@@ -122,12 +122,14 @@
   (let [elem (node elem)
         style (.-style elem)]
     (doseq [[k v] (partition 2 kvs)]
-      (aset style (name k) v))
+      (.setProperty style (name k) v))
     elem))
 
 (defn style [elem k]
   (assert k)
-  (aget (js/window.getComputedStyle (node elem)) (name k)))
+  (let [elem (node elem)
+        style (.-style elem)]
+    (.getPropertyValue style (name k))))
 
 (defn set-px! [elem & kvs]
   (assert (even? (count kvs)))

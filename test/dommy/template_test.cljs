@@ -124,9 +124,11 @@
 (deftemplate simple-template [[href anchor]]
   [:a.anchor {:href href} ^:text anchor])
 
-(deftest deftemplate
-  (is (= "<a class=\"anchor\" href=\"http://somelink.html\">some-text</a>"
-         (.-outerHTML (simple-template ["http://somelink.html" "some-text"])))))
+(deftest  deftemplate
+  (let [elem (simple-template ["http://somelink.html" "some-text"])]
+    (is (= (.-className elem) "anchor"))
+    (is (= (.-href elem) "http://somelink.html/"))
+    (is (= (.-text elem) "some-text"))))
 
 (deftemplate nested-template [n]
   [:ul.class1 (for [i (range n)] [:li i])])
