@@ -1,9 +1,9 @@
 (ns dommy.core-test
   (:use-macros
-   [cljs-test.macros :only [is is= deftest]]
+   [cemerick.cljs.test :only [is deftest]]
    [dommy.macros :only [sel sel1 node]])
   (:require
-   [cljs-test.core :as test]
+   [cemerick.cljs.test :as test]
    [dommy.utils :as utils]
    [dommy.core :as dommy]))
 
@@ -11,71 +11,71 @@
 
 (deftest set-html!
   (let [el (node [:span "foo" [:b "bar"]])]
-    (is= "foo<b>bar</b>" (dommy/html el))
+    (is (= "foo<b>bar</b>" (dommy/html el)))
     (dommy/set-html! el "hello <i>world</i>")
-    (is= "hello <i>world</i>" (dommy/html el))
+    (is (= "hello <i>world</i>" (dommy/html el)))
     (dommy/set-html! el "")
-    (is= "" (dommy/html el))))
+    (is (= "" (dommy/html el)))))
 
 (deftest text
   (let [el (node [:span "foo" [:b "bar"]])]
-    (is= "foobar" (dommy/text el))
+    (is (= "foobar" (dommy/text el)))
     (dommy/set-style! el :display "none")
-    (is= "foobar" (dommy/text el))))
+    (is (= "foobar" (dommy/text el)))))
 
 (deftest set-text!
   (let [el (node [:span])]
-    (is= "" (dommy/text el))
+    (is (= "" (dommy/text el)))
     (dommy/set-text! el "test")
-    (is= "test" (dommy/text el))
+    (is (= "test" (dommy/text el)))
     (dommy/set-text! el "<i>woah</i>")
-    (is= "<i>woah</i>" (dommy/text el))
+    (is (= "<i>woah</i>" (dommy/text el)))
     (dommy/set-text! el "")
-    (is= "" (dommy/text el))))
+    (is (= "" (dommy/text el)))))
 
 (deftest value
   (let [el (node [:select (for [n (range 1 10)] [:option n])])]
-    (is= "1" (dommy/value el))))
+    (is (= "1" (dommy/value el)))))
 
 (deftest set-value!
   (let [el (node [:select (for [n (range 1 10)] [:option n])])]
-    (is= "1" (dommy/value el))
+    (is (= "1" (dommy/value el)))
     (dommy/set-value! el "5")
-    (is= "5" (dommy/value el))))
+    (is (= "5" (dommy/value el)))))
 
 (deftest append!
   (let [container (node [:div])
         el (node [:span "test"])]
     (dommy/append! container el)
-    (is= 1 (.-childElementCount container))
-    (is= el (.-lastChild container))
+    (is (= 1 (.-childElementCount container)))
+    (is (= el (.-lastChild container)))
     (dommy/append! container "text node")
-    (is= 1 (.-childElementCount container))
-    (is= 2 (-> container .-childNodes .-length))
-    (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
+    (is (= 1 (.-childElementCount container)))
+    (is (= 2 (-> container .-childNodes .-length)))
+    (is (= "text node" (.-textContent (aget (.-childNodes container) 1))))
     (dommy/append! container [:b "-elem append!"])
-    (is= 2 (.-childElementCount container))
-    (is= "B" (-> container .-lastChild .-tagName))
+    (is (= 2 (.-childElementCount container)))
+    (is (= "B" (-> container .-lastChild .-tagName)))
     (dommy/append! container [:.foo] [:.bar])
-    (is= 4 (.-childElementCount container))
-    (is= "bar" (-> container .-lastChild .-className))))
+    (is (= 4 (.-childElementCount container)))
+    (is (= "bar" (-> container .-lastChild .-className)))))
 
 (deftest prepend!
   (let [container (node [:div])
         el (node [:span "test"])]
     (dommy/prepend! container el)
-    (is= 1 (.-childElementCount container))
-    (is= el (.-firstChild container))
+    (is (= 1 (.-childElementCount container)))
+    (is (= el (.-firstChild container)))
     (dommy/prepend! container "text node")
-    (is= 1 (.-childElementCount container))
-    (is= 2 (-> container .-childNodes .-length))
-    (is= "text node" (.-textContent (aget (.-childNodes container) 0)))
+    (is (= 1 (.-childElementCount container)))
+    (is (= 2 (-> container .-childNodes .-length)))
+    (is (= "text node" (.-textContent (aget (.-childNodes container) 0))))
     (dommy/prepend! container [:b "-elem prepend!"])
-    (is= 2 (.-childElementCount container))
-    (is= "B" (-> container .-firstChild .-tagName))
+    (is (= 2 (.-childElementCount container)))
+    (is (= "B" (-> container .-firstChild .-tagName)))
     (dommy/prepend! container [:.foo] [:.bar])
-    (is= 4 (.-childElementCount container))
-    (is= "bar" (-> container .-firstChild .-className))))
+    (is (= 4 (.-childElementCount container)))
+    (is (= "bar" (-> container .-firstChild .-className)))))
 
 (deftest insert-before!
   (let [container (node [:div])
@@ -83,18 +83,18 @@
         el (node [:span "test"])]
     (dommy/append! container placemark)
     (let [res (dommy/insert-before! el placemark)]
-      (is= 2 (.-childElementCount container))
-      (is= el (.-firstChild container))
-      (is= res el))
+      (is (= 2 (.-childElementCount container)))
+      (is (= el (.-firstChild container)))
+      (is (= res el)))
     (let [res (dommy/insert-before! "text node" placemark)]
-      (is= 2 (.-childElementCount container))
-      (is= 3 (-> container .-childNodes .-length))
-      (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
-      (is= res (aget (.-childNodes container) 1)))
+      (is (= 2 (.-childElementCount container)))
+      (is (= 3 (-> container .-childNodes .-length)))
+      (is (= "text node" (.-textContent (aget (.-childNodes container) 1))))
+      (is (= res (aget (.-childNodes container) 1))))
     (let [res (dommy/insert-before! [:b "-elem insert-before!"] placemark)]
-      (is= 3 (.-childElementCount container))
-      (is= "B" (-> res .-tagName))
-      (is= res (aget (.-childNodes container) 2)))))
+      (is (= 3 (.-childElementCount container)))
+      (is (= "B" (-> res .-tagName)))
+      (is (= res (aget (.-childNodes container) 2))))))
 
 (deftest insert-after!
   (let [container (node [:div])
@@ -102,28 +102,27 @@
         el (node [:span "test"])]
     (dommy/prepend! container placemark)
     (let [res (dommy/insert-after! el placemark)]
-      (is= 2 (.-childElementCount container))
-      (is= el (.-lastChild container))
-      (is= res el))
+      (is (= 2 (.-childElementCount container)))
+      (is (= el (.-lastChild container)))
+      (is (= res el)))
     (let [res (dommy/insert-after! "text node" placemark)]
-      (is= 2 (.-childElementCount container))
-      (is= 3 (-> container .-childNodes .-length))
-      (is= "text node" (.-textContent (aget (.-childNodes container) 1)))
-      (is= res (aget (.-childNodes container) 1)))
+      (is (= 2 (.-childElementCount container)))
+      (is (= 3 (-> container .-childNodes .-length)))
+      (is (= "text node" (.-textContent (aget (.-childNodes container) 1))))
+      (is (= res (aget (.-childNodes container) 1))))
     (let [res (dommy/insert-after! [:b "-elem insert-after!"] placemark)]
-      (is= 3 (.-childElementCount container))
-      (is= "B" (-> res .-tagName))
-      (is= res (aget (.-childNodes container) 1)))))
+      (is (= 3 (.-childElementCount container)))
+      (is (= "B" (-> res .-tagName)))
+      (is (= res (aget (.-childNodes container) 1))))))
 
 (deftest basic-selection
   ;; Simple
   (dommy/append! body (node [:div#foo]))
-  (is= (.-tagName (sel1 :#foo)) "DIV")
+  (is (= (.-tagName (sel1 :#foo)) "DIV"))
   ;; Evaluated
-  (let [bar :#bar
-        bar-el (node bar)]
+  (let [bar-el (node [:#bar])]
     (dommy/append! body bar-el)
-    (is= (sel1 bar) bar-el)))
+    (is (= (sel1 :#bar) bar-el))))
 
 (deftest selector-map-test
   (let [{:keys [container, header, todo-items]}
@@ -134,13 +133,13 @@
            [:li.todo-item "item1"]
            [:li.todo-item "item2"]]]
          {:header :.header :todo-items ^:live [:li.todo-item]})]
-    (is= (.-tagName container) "DIV")
+    (is (= (.-tagName container) "DIV"))
     (is (dommy/has-class? container "todo-list"))
-    (is= (.-tagName header) "H1")
-    (is= (dommy/text header) "Name")
-    (is= 2 (count @todo-items))
+    (is (= (.-tagName header) "H1"))
+    (is (= (dommy/text header) "Name"))
+    (is (= 2 (count @todo-items)))
     (dommy/append! (dommy.macros/sel1 container :ul) [:li.todo-item "item3"])
-    (is= 3 (count @todo-items))))
+    (is (= 3 (count @todo-items)))))
 
 (deftest simple-class
   (let [el-simple (node [:div.foo])
@@ -213,31 +212,31 @@
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
     (dommy/append! js/document.body el-simple)
-    (is= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
-         el-simple)
-    (is= 0 @click-cnt)
+    (is (= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
+           el-simple))
+    (is (= 0 @click-cnt))
     (dommy/fire! el-simple :click)
-    (is= 1 @click-cnt)))
+    (is (= 1 @click-cnt))))
 
 (deftest ancestor-nodes
   (let [parent (node [:.parent [:.child [:.grandchild]]])
         child (sel1 parent :.child)
         grandchild (sel1 parent :.grandchild)]
-    (is= [grandchild child parent] (dommy/ancestor-nodes grandchild))
-    (is= [parent] (dommy/ancestor-nodes parent))
+    (is (= [grandchild child parent] (dommy/ancestor-nodes grandchild)))
+    (is (= [parent] (dommy/ancestor-nodes parent)))
     (dommy/append! js/document.body parent)
-    (is= [parent js/document.body js/document.documentElement js/document]
-         (dommy/ancestor-nodes parent))))
+    (is (= [parent js/document.body js/document.documentElement js/document]
+           (dommy/ancestor-nodes parent)))))
 
 (deftest closest-and-matches-pred
   (let [parent (node [:.parent [:.child [:.grandchild]]])
         child (sel1 parent :.child)
         grandchild (sel1 parent :.grandchild)]
-    (is= grandchild (dommy/closest parent grandchild :.grandchild))
-    (is= child (dommy/closest parent grandchild :.child))
+    (is (= grandchild (dommy/closest parent grandchild :.grandchild)))
+    (is (= child (dommy/closest parent grandchild :.child)))
     (is (nil? (dommy/closest parent grandchild :.parent)))
     (dommy/append! js/document.body parent)
-    (is= parent (dommy/closest grandchild :.parent))))
+    (is (= parent (dommy/closest grandchild :.parent)))))
 
 (deftest live-listener
   (let [parent (node [:.parent [:.child [:.grandchild]]])
@@ -249,99 +248,99 @@
       parent :.grandchild
       (fn [event]
         (swap! click-cnt inc)
-        (is= grandchild (.-selectedTarget event))))
+        (is (= grandchild (.-selectedTarget event)))))
      fake-event)
-    (is= 1 @click-cnt)
+    (is (= 1 @click-cnt))
     ((dommy/live-listener
       parent :.child
       (fn [event]
         (swap! click-cnt inc)
-        (is= child (.-selectedTarget event))))
+        (is (= child (.-selectedTarget event)))))
      fake-event)
-    (is= 2 @click-cnt)
+    (is (= 2 @click-cnt))
     ((dommy/live-listener
       parent :.parent
       #(swap! click-cnt inc))
      fake-event)
-    (is= 2 @click-cnt)))
+    (is (= 2 @click-cnt))))
 
 (deftest listen!
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
     (dommy/append! js/document.body el-simple)
-    (is= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
-         el-simple)
-    (is= 0 @click-cnt)
+    (is (= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
+           el-simple))
+    (is (= 0 @click-cnt))
     (dommy/fire! el-simple :click)
-    (is= 1 @click-cnt)))
+    (is (= 1 @click-cnt))))
 
 (deftest listen!-multi
   (let [el (node :.test)
         click-cnt (atom 0)
         listener #(swap! click-cnt inc)]
     (dommy/append! js/document.body el)
-    (is= (dommy/listen! el :click listener :dblclick listener)
-         el)
-    (is= 0 @click-cnt)
+    (is (= (dommy/listen! el :click listener :dblclick listener)
+           el))
+    (is (= 0 @click-cnt))
     (dommy/fire! el :click)
-    (is= 1 @click-cnt)
+    (is (= 1 @click-cnt))
     (dommy/fire! el :dblclick)
-    (is= 2 @click-cnt)))
+    (is (= 2 @click-cnt))))
 
 (deftest unlisten!
   (let [el-nested (node [:ul [:li "Test"]])
         click-cnt (atom 0)
         listener #(swap! click-cnt inc)]
     (dommy/append! js/document.body el-nested)
-    (is= (dommy/listen! [el-nested :li] :click listener)
-         [el-nested :li])
+    (is (= (dommy/listen! [el-nested :li] :click listener)
+           [el-nested :li]))
     (dommy/fire! (sel1 el-nested :li) :click)
-    (is= 1 @click-cnt)
-    (is= (dommy/unlisten! [el-nested :li] :click listener)
-         [el-nested :li])
+    (is (= 1 @click-cnt))
+    (is (= (dommy/unlisten! [el-nested :li] :click listener)
+           [el-nested :li]))
     (dommy/fire! (sel1 el-nested :li) :click)
-    (is= 1 @click-cnt)
-    (is= (dommy/listen! [el-nested :li] :click listener)
-         [el-nested :li])
+    (is (= 1 @click-cnt))
+    (is (= (dommy/listen! [el-nested :li] :click listener)
+           [el-nested :li]))
     (dommy/fire! (sel1 el-nested :li) :click)
-    (is= 2 @click-cnt)
+    (is (= 2 @click-cnt))
     (let [el-nested (node [:.parent [:.child [:.grandchild]]])]
       (dommy/append! js/document.body el-nested)
-      (is= (dommy/listen! [el-nested :.child :.grandchild] :click listener)
-           [el-nested :.child :.grandchild])
+      (is (= (dommy/listen! [el-nested :.child :.grandchild] :click listener)
+             [el-nested :.child :.grandchild]))
       (dommy/fire! (sel1 el-nested :.grandchild) :click)
-      (is= 3 @click-cnt)
-      (is= (dommy/unlisten! [el-nested :.child :.grandchild] :click listener)
-           [el-nested :.child :.grandchild])
+      (is (= 3 @click-cnt))
+      (is (= (dommy/unlisten! [el-nested :.child :.grandchild] :click listener)
+             [el-nested :.child :.grandchild]))
       (dommy/fire! (sel1 el-nested [:.child :.grandchild]) :click)
-      (is= 3 @click-cnt))))
+      (is (= 3 @click-cnt)))))
 
 (deftest unlisten!-multi
   (let [el (node :.test)
         click-cnt (atom 0)
         listener #(swap! click-cnt inc)]
     (dommy/append! js/document.body el)
-    (is= (dommy/listen! el :click listener :dblclick listener)
-         el)
+    (is (= (dommy/listen! el :click listener :dblclick listener)
+           el))
     (dommy/fire! el :click)
     (dommy/fire! el :dblclick)
-    (is= 2 @click-cnt)
-    (is= (dommy/unlisten! el :click listener :dblclick listener)
-         el)
+    (is (= 2 @click-cnt))
+    (is (= (dommy/unlisten! el :click listener :dblclick listener)
+           el))
     (dommy/fire! el :click)
     (dommy/fire! el :dblclick)
-    (is= 2 @click-cnt)))
+    (is (= 2 @click-cnt))))
 
 (deftest listen-once!
   (let [el (node :.test)
         click-cnt (atom 0)]
     (dommy/append! js/document.body el)
-    (is= (dommy/listen-once! el :click #(swap! click-cnt inc))
-         el)
+    (is (= (dommy/listen-once! el :click #(swap! click-cnt inc))
+           el))
     (dommy/fire! el :click)
-    (is= 1 @click-cnt)
+    (is (= 1 @click-cnt))
     (dommy/fire! el :click)
-    (is= 1 @click-cnt)))
+    (is (= 1 @click-cnt))))
 
 (deftest mouseenter-and-mouseleave
   (let [greatgrandchild (node :.greatgrandchild)
@@ -369,11 +368,9 @@
             elem-sel [child [parent :.child]]]
       (dommy/listen! elem-sel fake-evt listener)
       (doseq [[where relatedTarget] should-call-listener]
-        (is (fire!-called-listener? real-evt relatedTarget)
-            (format "%s to/from %s is %s" (name real-evt) where (name fake-evt))))
+        (is (fire!-called-listener? real-evt relatedTarget)))
       (doseq [[where relatedTarget] shouldnt-call-listener]
-        (is (not (fire!-called-listener? real-evt relatedTarget))
-            (format "%s to/from %s isn't %s" (name real-evt) where (name fake-evt))))
+        (is (not (fire!-called-listener? real-evt relatedTarget))))
       (dommy/unlisten! elem-sel fake-evt listener)
       (doseq [[where relatedTarget] (concat should-call-listener shouldnt-call-listener)]
         (is (not (fire!-called-listener? real-evt relatedTarget))
@@ -383,53 +380,53 @@
   (let [el-simple (node [:div])]
     (is (not (dommy/hidden? el-simple)))
     (dommy/toggle! el-simple)
-    (is= "none" (-> el-simple .-style .-display))
+    (is (= "none" (-> el-simple .-style .-display)))
     (dommy/toggle! el-simple false)
-    (is= "none" (-> el-simple .-style .-display))
+    (is (= "none" (-> el-simple .-style .-display)))
     (dommy/toggle! el-simple true)
     (is (not (dommy/hidden? el-simple)))))
 
 (deftest set-style!
   (let [el (node [:div])]
     (dommy/set-style! el :height "0px" :width "1px" :z-index 1)
-    (is= (-> el .-style .-height) "0px")
-    (is= (-> el .-style .-width) "1px")
-    (is= (-> el .-style .-zIndex) "1")))
+    (is (= (-> el .-style .-height) "0px"))
+    (is (= (-> el .-style .-width) "1px"))
+    (is (= (-> el .-style .-zIndex) "1"))))
 
 (deftest style
   (let [el (node [:div])]
     (dommy/prepend! js/document.body el)
     (dommy/set-style! el :height "0px" :orphans 666)
-    (is= (dommy/style el :height) "0px")
-    (is= (dommy/style el :orphans) "666")))
+    (is (= (dommy/style el :height) "0px"))
+    (is (= (dommy/style el :orphans) "666"))))
 
 (deftest set-px!
   (let [el (node [:div])]
     (dommy/set-px! el :height 0 :width 1)
-    (is= (-> el .-style .-height) "0px")
-    (is= (-> el .-style .-width) "1px")))
+    (is (= (-> el .-style .-height) "0px"))
+    (is (= (-> el .-style .-width) "1px"))))
 
 (deftest px
   (let [el (node [:div])]
     (dommy/prepend! js/document.body el)
     (dommy/set-style! el :height "0px" :width "1px")
-    (is= (dommy/px el :height) 0)
-    (is= (dommy/px el :width) 1)))
+    (is (= (dommy/px el :height) 0))
+    (is (= (dommy/px el :width) 1))))
 
 (deftest ->Array
   (let [array (utils/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
     (is (instance? js/Array array))
-    (is= (.-length array) 2)
-    (is= (aget array 0) "lol")
-    (is= (aget array 1) "wut")))
+    (is (= (.-length array) 2))
+    (is (= (aget array 0) "lol"))
+    (is (= (aget array 1) "wut"))))
 
 (deftest bounding-client-rect
-  (set! js/document.body.scrollTop 42)
   (let [el (doto (node [:div {:style {:position "absolute" :left "100px" :top "200px"}}])
              (->> (dommy/append! js/document.body)))
         {:keys [left top]} (dommy/bounding-client-rect el)]
-    (is= left 100)
-    (is= top 158)))
+    (js/console.log (dommy/bounding-client-rect el))
+    (is (= left 100))
+    (is (= top 200))))
 
 ;; Performance test to run in browser
 

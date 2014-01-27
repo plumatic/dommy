@@ -113,17 +113,29 @@ One caveat of using the compile-macro is that if you have a compound element (a 
 (node [:a ^:attrs (merge m1 m2)])
 ```
 
+### Events
+
+Listening for events in dommy is pretty straightforward. `listen!` takes a DOM node, a macro describing the event and the function to run in the case of that event being triggered.
+
+```clojure
+(ns …
+  (:require
+    [dommy.core :as dommy])
+  (:use-macros
+    [dommy.macros :only [sel1]]))
+
+(defn clickEvent [event]
+    (.log js/console "You have clicked the button! Congratulations"))
+
+(dommy/listen! (sel1 :#clickButton)
+                :click clickEvent)
+```
+
 ## Testing
 
-Dommy comes with reasonably extensive tests. To run them 
-first build the `test` cljsbuild target, as follows:
+For all pull requests, please ensure your tests pass (or add test cases) before submitting. 
 
-    $ lein clean
-    $ lein cljsbuild auto test
-
-Next, open up the HTML file under `resources/dommy-tests.html` which will give you a visual representation of all tests. For
-all pull requests, please ensure your tests pass (or add test cases) before submitting. 
-
+    $ lein test
 
 ## License
 

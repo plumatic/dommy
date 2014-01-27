@@ -162,7 +162,7 @@
          (doto (node elem)
            (.setAttribute
             (name k)
-            (if (identical? k :style)
+            (if (= k :style)
               (style-str v)
               v))))))
   ([elem k v & kvs]
@@ -222,11 +222,13 @@
   "Returns a map of the bounding client rect of `elem`
    as a map with [:top :left :right :bottom :width :height]"
   [elem]
-  (-> elem
-      node
-      .getBoundingClientRect
-      (doto (aset "constructor" js/Object))
-      (js->clj :keywordize-keys true)))
+  (let [r (.getBoundingClientRect (node elem))]
+    {:top (.-top r)
+     :bottom (.-bottom r)
+     :left (.-left r)
+     :right (.-right r)
+     :width (.-width r)
+     :height (.-height r)}))
 
 (defn scroll-into-view
   [elem align-with-top?]
