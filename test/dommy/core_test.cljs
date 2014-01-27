@@ -212,7 +212,7 @@
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
     (dommy/append! js/document.body el-simple)
-    (is (= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
+    (is (= (dommy/listen! el-simple :click (fn [e] (swap! click-cnt inc)))
            el-simple))
     (is (= 0 @click-cnt))
     (dommy/fire! el-simple :click)
@@ -268,7 +268,7 @@
   (let [el-simple (node [:div#id])
         click-cnt (atom 0)]
     (dommy/append! js/document.body el-simple)
-    (is (= (dommy/listen! el-simple :click (fn [e] #_(js* "debugger") (swap! click-cnt inc)))
+    (is (= (dommy/listen! el-simple :click (fn [e] (swap! click-cnt inc)))
            el-simple))
     (is (= 0 @click-cnt))
     (dommy/fire! el-simple :click)
@@ -424,7 +424,6 @@
   (let [el (doto (node [:div {:style {:position "absolute" :left "100px" :top "200px"}}])
              (->> (dommy/append! js/document.body)))
         {:keys [left top]} (dommy/bounding-client-rect el)]
-    (js/console.log (dommy/bounding-client-rect el))
     (is (= left 100))
     (is (= top 200))))
 
