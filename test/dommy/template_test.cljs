@@ -63,7 +63,10 @@
   (let [e (first (template/html->nodes "<div><p>some-text</p></div>"))]
     (is (= "DIV" ( .-tagName e)))
     (is (= "<p>some-text</p>" (.-innerHTML e)))
-    (is (=  e (template/node e)))))
+    (is (=  e (template/node e))))
+  (let [comment (first (template/html->nodes "<!--a comment should not throw an exception-->"))]
+    (is (= "a comment should not throw an exception" (.-textContent comment)))
+    (is (= comment (template/node comment)))))
 
 (deftest nested-template-test
   ;; test html for example list form

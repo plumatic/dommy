@@ -96,6 +96,9 @@
   js/Element
   (-elem [this] this)
 
+  js/Comment
+  (-elem [this] this)
+
   js/Text
   (-elem [this] this)
 
