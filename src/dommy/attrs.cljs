@@ -128,9 +128,7 @@
 
 (defn style [elem k]
   (assert k)
-  (let [elem (node elem)
-        style (.-style elem)]
-    (.getPropertyValue style (string-or-keyword k))))
+  (aget (js/window.getComputedStyle (node elem)) (name k)))
 
 (defn set-px! [elem & kvs]
   (assert (even? (count kvs)))
