@@ -3,7 +3,7 @@
    [dommy.macros :only [node]])
   (:require
    [clojure.string :as str]
-   [dommy.utils :refer [string-or-keyword]]))
+   [dommy.utils :refer [as-str]]))
 
 (defn- ^boolean class-match?
   "does class-name string have class starting at index idx.
@@ -35,7 +35,7 @@
    available and otherwise does fast parse of className string"
   [elem class]
   (let [elem (node elem)
-        class (string-or-keyword class)]
+        class (as-str class)]
     (if-let [class-list (.-classList elem)]
       (.contains class-list class)
       (when-let [class-name (.-className elem)]
@@ -46,7 +46,7 @@
   "add class to element"
   ([elem classes]
      (let [elem (node elem)
-           classes (-> classes string-or-keyword str/trim)]
+           classes (-> classes as-str str/trim)]
        (when (seq classes)
          (if-let [class-list (.-classList elem)]
            (doseq [class (.split classes #"\s+")]
@@ -79,7 +79,7 @@
   "remove class from and returns `elem`"
   ([elem class]
      (let [elem (node elem)
-           class (string-or-keyword class)]
+           class (as-str class)]
        (if-let [class-list (.-classList elem)]
          (.remove class-list class)
          (let [class-name (.-className elem)
@@ -99,7 +99,7 @@
    otherwise it will remove-class!"
   ([elem class]
      (let [elem (node elem)
-           class (string-or-keyword class)]
+           class (as-str class)]
        (if-let [class-list (.-classList elem)]
          (.toggle class-list class)
          (toggle-class! elem class (not (has-class? elem class))))
@@ -115,7 +115,7 @@
   (if (string? x)
     x
     (->> x
-         (map (fn [[k v]] (str (string-or-keyword k) ":" (string-or-keyword v) ";")))
+         (map (fn [[k v]] (str (as-str k) ":" (as-str v) ";")))
          (str/join " "))))
 
 (defn set-style! [elem & kvs]
@@ -123,7 +123,7 @@
   (let [elem (node elem)
         style (.-style elem)]
     (doseq [[k v] (partition 2 kvs)]
-      (.setProperty style (string-or-keyword k) v))
+      (.setProperty style (as-str k) v))
     elem))
 
 (defn style [elem k]
@@ -157,10 +157,10 @@
      (when v
        (if (fn? v)
          (doto (node elem)
-           (aset (string-or-keyword k) v))
+           (aset (as-str k) v))
          (doto (node elem)
            (.setAttribute
-            (string-or-keyword k)
+            (as-str k)
             (if (= k :style)
               (style-str v)
               v))))))
@@ -176,7 +176,7 @@
      (let [elem (node elem)]
        (if (#{:class :classes} k)
          (set! (.-className elem) "")
-         (.removeAttribute elem (string-or-keyword k)))
+         (.removeAttribute elem (as-str k)))
        elem))
   ([elem k & ks]
      (let [elem (node elem)]
@@ -186,7 +186,7 @@
 
 (defn attr [elem k]
   (when k
-    (.getAttribute (node elem) (string-or-keyword k))))
+    (.getAttribute (node elem) (as-str k))))
 
 (defn toggle-attr!
   ([elem k]

@@ -14,7 +14,10 @@
 (defn ->Array [array-like]
   (.call js/Array.prototype.slice array-like))
 
-(defn string-or-keyword [s]
+(defn as-str
+  "Coerces strings and keywords to strings, while preserving namespace of
+   namespaced keywords"
+  [s]
   (if (keyword? s)
-    (-> (str s) (subs 1))
+    (str (some-> (namespace s) (str "/")) (name s))
     s))
