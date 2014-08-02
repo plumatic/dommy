@@ -1,11 +1,11 @@
 (ns dommy.template
   (:require
    [clojure.string :as str]
-   [dommy.attrs :as attrs]))
+   [dommy.attrs :as attrs]
+   [dommy.utils :refer [as-str]]))
 
 (def +svg-ns+ "http://www.w3.org/2000/svg")
 (def +svg-tags+ #{"svg" "g" "rect" "circle" "clipPath" "path" "line" "polygon" "polyline" "text" "textPath"})
-
 
 (defprotocol PElement
   (-elem [this] "return the element representation of this"))
@@ -23,7 +23,7 @@
 (defn base-element
   "dom element from css-style keyword like :a.class1 or :span#my-span.class"
   [node-key]
-  (let [node-str (subs (str node-key) 1)
+  (let [node-str (as-str node-key)
         base-idx (next-css-index node-str 0)
         tag (cond
              (> base-idx 0) (.substring node-str 0 base-idx)
