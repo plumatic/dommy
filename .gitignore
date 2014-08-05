@@ -1,4 +1,11 @@
-target/**
-.lein**
-pom.xml
+.lein-failures
 *~
+pom.xml
+pom.xml.asc
+target/**
+.*.swp
+.nrepl-port
+.repl
+out
+.lein-repl-history
+/doc/
