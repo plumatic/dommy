@@ -13,9 +13,12 @@
   :plugins [[lein-cljsbuild "0.3.2"]
             [com.cemerick/clojurescript.test "0.2.1"]
             [com.cemerick/austin "0.1.3"]]
+
   :hooks [leiningen.cljsbuild]
-  :dependencies [[crate "0.2.3" :scope "dev"] ;; for perf test
-                 [com.cemerick/clojurescript.test "0.2.1"]]
+
+  :profiles {:dev {:dependencies [[crate "0.2.3"] ;; for perf test
+                                  [com.cemerick/clojurescript.test "0.2.1"]]}}
+
   :cljsbuild
   {:builds
    {:test {:source-paths ["src" "test"]
