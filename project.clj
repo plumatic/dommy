@@ -1,4 +1,4 @@
-(defproject prismatic/dommy "0.1.3-SNAPSHOT"
+(defproject prismatic/dommy "0.1.3"
   :clojurescript? true
   :description "Clojurescript DOM templating and manipulation"
   :url "https://github.com/prismatic/dommy"
