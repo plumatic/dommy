@@ -19,6 +19,9 @@
   :profiles {:dev {:dependencies [[crate "0.2.3"] ;; for perf test
                                   [com.cemerick/clojurescript.test "0.2.1"]]}}
 
+  :lein-release {:deploy-via :shell
+                 :shell ["lein" "deploy" "clojars"]}
+
   :cljsbuild
   {:builds
    {:test {:source-paths ["src" "test"]
