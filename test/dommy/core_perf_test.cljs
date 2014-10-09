@@ -1,8 +1,7 @@
 (ns dommy.core-perf-test
-  (:use-macros
-   [dommy.macros :only [node sel sel1]])
   (:require
-   [dommy.core :as dommy]))
+   [dommy.test-utils :refer [ce]]
+   [dommy.core :as dommy :refer-macros [sel sel1]]))
 
 (defn profile-fn [f]
   (let [now (js/performance.now)]
@@ -23,32 +22,41 @@
        clj->js))
 
 (defn ^:export selector-perf-test [samples]
-  (dommy/append! (sel1 :body) [:#c1 [:.c2 [:.c3]] [:.c3]])
+  (dommy/append!
+   js/document.body
+   (-> (ce :div)
+       (dommy/set-attr! :id :c1)
+       (dommy/append! (-> (ce :div)
+                          (dommy/add-class! :c2)
+                          (dommy/append! (-> (ce :div)
+                                             (dommy/add-class! :c3)))))
+       (dommy/append! (-> (ce :div)
+                          (dommy/add-class! :c3)))))
   (let [c2 (sel1 :.c2)]
-   (perf-test-map
-    {:dommy-body #(sel1 :body)
-     :jquery-body #(js/jQuery "body")
-     :dommy-id #(sel1 :#c1)
-     :jquery-id #(js/jQuery "#c1")
-     :dommy-class-sel1 #(sel1 :.c3)
-     :jquery-class-sel1 #(aget (js/jQuery ".c3") 0)
-     :dommy-multi-class #(sel ".c2, .c3")
-     :jquery-multi-class #(js/jQuery ".c2, .c3")
-     :dommy-nested-sel1 #(sel1 c2 :.c3)
-     :jquery-nested-sel1 #(js/jQuery ".c3" c2)}
-    samples)))
+    (perf-test-map
+     {:dommy-body #(sel1 :body)
+      :jquery-body #(js/jQuery "body")
+      :dommy-id #(sel1 :#c1)
+      :jquery-id #(js/jQuery "#c1")
+      :dommy-class-sel1 #(sel1 :.c3)
+      :jquery-class-sel1 #(aget (js/jQuery ".c3") 0)
+      :dommy-multi-class #(sel ".c2, .c3")
+      :jquery-multi-class #(js/jQuery ".c2, .c3")
+      :dommy-nested-sel1 #(sel1 c2 :.c3)
+      :jquery-nested-sel1 #(js/jQuery ".c3" c2)}
+     samples)))
 
 (defn ^:export append-perf-test [samples]
-  (let [dommy-container (node :div)
-        jquery-container (js/jQuery (node :div))
-        el (node :div)]
+  (let [dommy-container (ce :div)
+        jquery-container (js/jQuery (ce :div))
+        el (ce :div)]
     (perf-test-map
      {:dommy #(dommy/append! dommy-container el)
       :jquery #(.append jquery-container el)}
      samples)))
 
 (defn ^:export toggle-class-perf-test [samples]
-  (let [el (node :div)
+  (let [el (ce :div)
         jquery-el (js/jQuery el)]
     (perf-test-map
      {:dommy #(dommy/toggle-class! el :pwned)
@@ -56,7 +64,7 @@
      samples)))
 
 (defn ^:export listen-perf-test [samples]
-  (let [el (node [:div [:.child]])
+  (let [el (-> (ce :div) (dommy/append! (ce :div)))
         jquery-el (js/jQuery el)
         noop #()]
     (perf-test-map

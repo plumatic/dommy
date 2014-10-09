@@ -1,6 +1,6 @@
 (defproject prismatic/dommy "0.1.4-SNAPSHOT"
   :clojurescript? true
-  :description "Clojurescript DOM templating and manipulation"
+  :description "Clojurescript DOM manipulation"
   :url "https://github.com/prismatic/dommy"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -10,14 +10,14 @@
                               [:url "http://getprismatic.com"]
                               [:email "admin+oss@getprismatic.com"]
                               [:timezone "-8"]]]
-  :plugins [[lein-cljsbuild "0.3.2"]
-            [com.cemerick/clojurescript.test "0.2.1"]
-            [com.cemerick/austin "0.1.3"]]
 
-  :hooks [leiningen.cljsbuild]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/clojurescript "0.0-2356" :scope "provided"]]
 
-  :profiles {:dev {:dependencies [[crate "0.2.3"] ;; for perf test
-                                  [com.cemerick/clojurescript.test "0.2.1"]]}}
+  :plugins [[lein-cljsbuild "1.0.3"]]
+
+  :profiles {:dev {:dependencies [[com.cemerick/clojurescript.test "0.3.1"]]
+                   :plugins [[com.cemerick/clojurescript.test "0.3.1"]]}}
 
   :lein-release {:deploy-via :shell
                  :shell ["lein" "deploy" "clojars"]}
