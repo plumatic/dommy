@@ -11,7 +11,7 @@
                               [:email "admin+oss@getprismatic.com"]
                               [:timezone "-8"]]]
 
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
                  [org.clojure/clojurescript "0.0-2356" :scope "provided"]]
 
   :plugins [[lein-cljsbuild "1.0.3"]]

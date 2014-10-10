@@ -60,7 +60,7 @@ Functions that modify take the target node as their first argument, and return t
 
 ### Events
 
-Dommy's events API essentially mirrors the native JavaScript API.
+Dommy's event API closely resembles the native JavaScript API.
 
 ```clojure
 (ns foo.bar
@@ -75,7 +75,7 @@ Dommy's events API essentially mirrors the native JavaScript API.
 (dommy/unlisten! (sel1 :#my-button) :click click-handler)
 ```
 
-If the first argument to `listen!` is a sequence, the handler will be set using a live listener which propagates to the selector defined by the sequence. A special property `selectedTarget` added to the event specifies the element selected by the live listener.
+If the first argument to `listen!` is a sequence, the handler will delegate events to the selected element defined by the sequence. A special property `selectedTarget` added to the event specifies the element selected.
 
 ```clojure
 (defn todo-click-handler [e]

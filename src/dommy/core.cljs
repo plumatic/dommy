@@ -8,7 +8,10 @@
    [clojure.string :as str]
    [dommy.utils :as utils :refer [as-str]]))
 
-(defn selector [data]
+(defn selector
+  "Returns a selector in string format.
+   Accepts string, keyword, or collection."
+  [data]
   (cond
    (coll? data) (str/join " " (map selector data))
    (or (string? data) (keyword? data)) (name data)))
@@ -25,23 +28,26 @@
 (defn value [elem]
   (.-value elem))
 
+(defn class [elem]
+  (.-className elem))
+
 (defn attr [elem k]
   (when k
     (.getAttribute elem (as-str k))))
 
 (defn style
+  "The computed style of `elem`, optionally specifying the key of
+   a particular style to return"
   ([elem]
      (js->clj (.getComputedStyle js/window elem)))
   ([elem k]
-     (aget (.getComputedStyle js/window elem) (name k))))
+     (aget (.getComputedStyle js/window elem) (as-str k))))
 
 (defn px [elem k]
+  "Returns a numeric style attribute as its pixel value"
   (let [pixels (style elem k)]
     (when (seq pixels)
       (js/parseInt pixels))))
-
-(defn class [elem]
-  (.-className elem))
 
 (defn ^boolean has-class?
   "Does `elem` contain `c` in its class list"
@@ -53,7 +59,9 @@
         (when-let [i (utils/class-index class-name c)]
           (>= i 0))))))
 
-(defn ^boolean hidden? [elem]
+(defn ^boolean hidden?
+  "Is `elem` hidden (as associated with hide!/show!/toggle!, using display: none)"
+  [elem]
   (identical? (style elem :display) "none"))
 
 (defn bounding-client-rect
@@ -116,24 +124,32 @@
 ;;; Element modification
 
 (defn set-text!
+  "Set the textContent of `elem` to `text`, fall back to innerText"
   [elem text]
   (if (.-textContent elem)
     (do-set! elem .-textContent text)
     (do-set! elem .-innerText text)))
 
 (defn set-html!
+  "Set the innerHTML of `elem` to `html`"
   [elem html]
   (do-set! elem .-innerHTML html))
 
 (defn set-value!
+  "Set the value of `elem` to `value`"
   [elem value]
   (do-set! elem .-value value))
 
 (defn set-class!
+  "Set the css class of `elem` to `elem`"
   [elem c]
   (do-set! elem .-className c))
 
-(defn set-style! [elem & kvs]
+(defn set-style!
+  "Set the style of `elem` using key-value pairs:
+
+      (set-style! elem :display \"block\" :color \"red\")"
+  [elem & kvs]
   (assert (even? (count kvs)))
   (let [style (.-style elem)]
     (doseq [[k v] (partition 2 kvs)]
@@ -141,6 +157,10 @@
     elem))
 
 (defn set-px! [elem & kvs]
+  "Set the style of `elem`, converting numeric
+   pixel values string pixel values:
+
+       (set-px! elem :top 1337 :left 42)"
   (assert (even? (count kvs)))
   (doseq [[k v] (partition 2 kvs)]
     (set-style! elem k (str v "px")))
@@ -170,6 +190,9 @@
      elem))
 
 (defn remove-attr!
+  "Removes dom attributes on and returns `elem`.
+   `class` and `classes` are special cases which clear
+   out the class name on removal."
   ([elem k]
      (let [k (as-str k)]
        (if (#{"class" "classes"} k)
@@ -182,6 +205,8 @@
      elem))
 
 (defn toggle-attr!
+  "Toggles a dom attribute `k` on `elem`, optionally specifying
+   the boolean value with `add?`"
   ([elem k]
      (toggle-attr! elem k (boolean (attr elem k))))
   ([elem k ^boolean add?]
@@ -241,12 +266,14 @@
      elem))
 
 (defn toggle!
-  "Display or hide the given `elem`. Takes an optional boolean `show?`"
+  "Display or hide the given `elem` (using display: none).
+   Takes an optional boolean `show?`"
   ([elem ^boolean show?]
      (set-style! elem :display (if show? "" "none")))
   ([elem] (toggle! elem (hidden? elem))))
 
-(defn hide! [elem] (toggle! elem false))
+(defn hide! [elem]
+  (toggle! elem false))
 
 (defn show! [elem] (toggle! elem true))
 
@@ -454,6 +481,7 @@
   elem-sel)
 
 (defn listen-once!
+  "Behaves like `listen!`, but removes the listener after the first event occurs."
   [elem-sel & type-fs]
   (assert (even? (count type-fs)))
   (let [[elem selector] (elem-and-selector elem-sel)]
