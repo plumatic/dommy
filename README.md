@@ -10,7 +10,7 @@ Add the following dependency to your `project.clj`:
 [prismatic/dommy "1.0.0"]
 ```
 
-#### Upgrading to 1.0.0 from 0.X.Y
+#### Upgrading to 1.0.0+ from 0.X.Y
 
 Version "1.0.0" includes breaking API changes. Here's a quick overview of what's
 changed:
