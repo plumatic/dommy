@@ -2,6 +2,8 @@
 
 A ClojureScript DOM manipulation and event library.
 
+*Note: Templating was removed in 1.0.0. For more information, see [the pull request](https://github.com/Prismatic/dommy/pull/85).*
+
 ## Usage
 
 Add the following dependency to your `project.clj`:
