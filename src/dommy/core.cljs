@@ -280,7 +280,7 @@
 (defn show! [elem] (toggle! elem true))
 
 (defn scroll-into-view
-  [elem align-with-top?]
+  [elem ^boolean align-with-top?]
   (let [top (:top (bounding-client-rect elem))]
     (when (< js/window.innerHeight
              (+ top (.-offsetHeight elem)))
