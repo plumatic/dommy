@@ -2,8 +2,6 @@
 
 A ClojureScript DOM manipulation and event library.
 
-*Note: Templating was removed in 1.0.0. For more information, see [the pull request](https://github.com/Prismatic/dommy/pull/85).*
-
 ## Usage
 
 Add the following dependency to your `project.clj`:
@@ -11,6 +9,20 @@ Add the following dependency to your `project.clj`:
 ```clojure
 [prismatic/dommy "1.0.0"]
 ```
+
+#### Upgrading to 1.0.0 from 0.X.Y
+
+Version "1.0.0" includes breaking API changes. Here's a quick overview of what's
+changed:
+
+*   `dommy.template` namespace and all related templating features
+    (`node`, `deftemplate`, etc) have been removed from the library.
+*   Simplified namespace structure.
+    Everything in `dommy.macros` and `dommy.attrs` has been moved into
+    `dommy.core`
+
+See CHANGELOG.md or <https://github.com/Prismatic/dommy/pull/85> for more
+details.
 
 ### Selection
 
