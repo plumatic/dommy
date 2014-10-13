@@ -1,10 +1,9 @@
 ## 1.0.0
 
 * Updated ClojureScript dependency to 0.0-2356
-* Removed all templating-related functionality (`node`, `deftemplate`, etc)
-* Removed `dommy.template`
-* Consolidated all core functionality to `dommy.core`, removing `dommy.attrs`
-* Renamed `dommy.macros` to `dommy.core`, allowing `(:require [dommy.core :as dommy :include-macros true])`
+* BREAKING: Removed `dommy.template` namespace
+* BREAKING: Merged `dommy.macros` into `dommy.core`; macros now required like `(:require [dommy.core :as dommy :include-macros true])`
+* Merged `dommy.attrs` into `dommy.core`.
 * Renamed `dommy.core/ancestor-nodes` to `dommy.core/ancestors`
 * Added `dommy.core/create-element` and `dommy.core/create-text-node`
 

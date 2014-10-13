@@ -16,6 +16,8 @@
 
   :plugins [[lein-cljsbuild "1.0.3"]]
 
+  :hooks [leiningen.cljsbuild]
+
   :profiles {:dev {:dependencies [[com.cemerick/clojurescript.test "0.3.1"]]
                    :plugins [[com.cemerick/clojurescript.test "0.3.1"]]}}
 

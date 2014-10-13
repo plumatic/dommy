@@ -86,6 +86,8 @@
   [elem]
   (take-while identity (iterate parent elem)))
 
+(def ^{:deprecated "1.0.0"} ancestor-nodes ancestors)
+
 (defn matches-pred
   "Returns a predicate on nodes that match `selector` at the
    time of this `matches-pred` call (may return outdated results
