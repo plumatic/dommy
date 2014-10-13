@@ -2,8 +2,7 @@
   "Core DOM manipulation functions"
   (:refer-clojure :exclude [ancestors class])
   (:require-macros
-   [dommy.core :refer [sel]]
-   [dommy.utils :refer [do-set!]])
+   [dommy.core :refer [sel]])
   (:require
    [clojure.string :as str]
    [dommy.utils :as utils :refer [as-str]]))
@@ -126,24 +125,27 @@
 (defn set-text!
   "Set the textContent of `elem` to `text`, fall back to innerText"
   [elem text]
-  (if (.-textContent elem)
-    (do-set! elem .-textContent text)
-    (do-set! elem .-innerText text)))
+  (if-not (undefined? (.-textContent elem))
+    (set! (.-textContent elem) text)
+    (set! (.-innerText elem) text))
+  elem)
 
 (defn set-html!
   "Set the innerHTML of `elem` to `html`"
   [elem html]
-  (do-set! elem .-innerHTML html))
+  (set! (.-innerHTML elem) html)
+  elem)
 
 (defn set-value!
   "Set the value of `elem` to `value`"
   [elem value]
-  (do-set! elem .-value value))
+  (set! (.-value elem) value)
+  elem)
 
 (defn set-class!
   "Set the css class of `elem` to `elem`"
   [elem c]
-  (do-set! elem .-className c))
+  (set! (.-className elem) c))
 
 (defn set-style!
   "Set the style of `elem` using key-value pairs:

@@ -2,10 +2,6 @@
   (:require
    [clojure.string :as str]))
 
-(defmacro do-set! [o o-var expr]
-  `(do (set! (~o-var ~o) ~expr)
-       ~o))
-
 (defn as-str
   "Coerces strings and keywords to strings, while preserving namespace of
    namespaced keywords"
