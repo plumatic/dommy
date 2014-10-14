@@ -1,211 +1,378 @@
 (ns dommy.core
-  "Core DOM manipulation functions
-
-   Many of these functions take something which is node-like. Node-like
-   refers to the result of calling `dommy.template/->node-like` on the object. For
-   any DOM node, ->node-like returns the same reference equals object. When it gets
-   passed nested data structure it converts to a fresh DOM node. It falls back to the PElement
-   protocol (see dommy.template) so is extensible."
-  (:use-macros
-   [dommy.macros :only [sel sel1]])
+  "Core DOM manipulation functions"
+  (:refer-clojure :exclude [ancestors class])
+  (:require-macros
+   [dommy.core :refer [sel]])
   (:require
    [clojure.string :as str]
-   [dommy.utils :as utils]
-   [dommy.attrs :as attrs]
-   [dommy.template :as template]))
+   [dommy.utils :as utils :refer [as-str]]))
 
-;; Shadowing names from dommy.attrs
-;; for backwards compatibility
-(def has-class? attrs/has-class?)
-(def add-class! attrs/add-class!)
-(def remove-class! attrs/remove-class!)
-(def toggle-class! attrs/toggle-class!)
-(def set-attr! attrs/set-attr!)
-(def set-style! attrs/set-style!)
-(def set-px! attrs/set-px!)
-(def px attrs/px)
-(def style-str attrs/style-str)
-(def style attrs/style)
-(def remove-attr! attrs/remove-attr!)
-(def toggle-attr! attrs/toggle-attr!)
-(def attr attrs/attr)
-(def hidden? attrs/hidden?)
-(def toggle! attrs/toggle!)
-(def hide! attrs/hide!)
-(def show! attrs/show!)
-(def bounding-client-rect attrs/bounding-client-rect)
-(def scroll-into-view attrs/scroll-into-view)
-(def dissoc-in utils/dissoc-in)
-(def ->Array utils/->Array)
+(defn selector
+  "Returns a selector in string format.
+   Accepts string, keyword, or collection."
+  [data]
+  (cond
+   (coll? data) (str/join " " (map selector data))
+   (or (string? data) (keyword? data)) (name data)))
 
-(defn set-html!
-  [elem html]
-  (let [elem (template/->node-like elem)]
-    (set! (.-innerHTML elem) html)
-    elem))
-
-(defn html [elem]
-  (-> elem template/->node-like .-innerHTML))
-
-(defn set-text!
-  [elem text]
-  (let [elem (template/->node-like elem)
-        prop (if (.-textContent elem) "textContent" "innerText")]
-    (aset elem prop text)
-    elem))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Element accessors
 
 (defn text [elem]
   (or (.-textContent elem) (.-innerText elem)))
 
+(defn html [elem]
+  (.-innerHTML elem))
+
 (defn value [elem]
-  (-> elem template/->node-like .-value))
+  (.-value elem))
 
-(defn set-value!
-  [elem value]
-  (let [elem (template/->node-like elem)]
-    (set! (.-value elem) value)
-    elem))
+(defn class [elem]
+  (.-className elem))
 
-(defn append!
-  "append `child` to `parent`. 'parent' and 'child' should be node-like
-   (work with dommy.template/->node-like). The node-like projection
-   of parent is returned after appending child."
-  ([parent child]
-     (doto (template/->node-like parent)
-       (.appendChild (template/->node-like child))))
+(defn attr [elem k]
+  (when k
+    (.getAttribute elem (as-str k))))
 
-  ([parent child & more-children]
-     (let [parent (template/->node-like parent)]
-       (doseq [c (cons child more-children)]
-         (append! parent c))
-       parent)))
+(defn style
+  "The computed style of `elem`, optionally specifying the key of
+   a particular style to return"
+  ([elem]
+     (js->clj (.getComputedStyle js/window elem)))
+  ([elem k]
+     (aget (.getComputedStyle js/window elem) (as-str k))))
 
-(defn prepend!
-  "prepend `child` to `parent`, both node-like
-   return ->node-like projection of `parent`"
-  ([parent child]
-     (let [parent (template/->node-like parent)]
-       (.insertBefore parent
-                      (template/->node-like child)
-                      (.-firstChild parent))))
+(defn px [elem k]
+  "Returns a numeric style attribute as its pixel value"
+  (let [pixels (style elem k)]
+    (when (seq pixels)
+      (js/parseInt pixels))))
 
-  ([parent child & more-children]
-     (let [parent (template/->node-like parent)]
-       (doseq [c (cons child more-children)]
-         (prepend! parent c))
-       parent)))
+(defn ^boolean has-class?
+  "Does `elem` contain `c` in its class list"
+  [elem c]
+  (let [c (utils/as-str c)]
+    (if-let [class-list (.-classList elem)]
+      (.contains class-list c)
+      (when-let [class-name (class elem)]
+        (when-let [i (utils/class-index class-name c)]
+          (>= i 0))))))
 
-(defn insert-before!
-  "insert `node` before `other`, both node-like,
-   `other` must have a parent. return `node`"
-  [elem other]
-  (let [actual-node (template/->node-like elem)
-        other (template/->node-like other)]
-    (assert (.-parentNode other))
-    (.insertBefore (.-parentNode other) actual-node other)
-    actual-node))
-
-(defn insert-after!
-  "insert `node` after `other`, both node-like,
-   `other` must have a parent. return `node`"
-  [elem other]
-  (let [actual-node (template/->node-like elem)
-        other (template/->node-like other)
-        parent (.-parentNode other)]
-    (if-let [next (.-nextSibling other)]
-      (.insertBefore parent actual-node next)
-      (.appendChild parent actual-node))
-    actual-node))
-
-(defn replace!
-  "replace `elem` with `new`, both node-like, return node-like projection of new.
-   node-like projection of elem must have parent."
-  [elem new]
-  (let [new (template/->node-like new)
-        elem (template/->node-like elem)]
-    (assert (.-parentNode elem))
-    (.replaceChild (.-parentNode elem) new elem)
-    new))
-
-(defn replace-contents!
-  [parent node-like]
-  (doto (template/->node-like parent)
-    (-> .-innerHTML (set! ""))
-    (append! node-like)))
-
-(defn remove!
-  "remove node-like `elem` from parent, return node-like projection of elem"
+(defn ^boolean hidden?
+  "Is `elem` hidden (as associated with hide!/show!/toggle!, using display: none)"
   [elem]
-  (let [elem (template/->node-like elem)]
-    (doto (.-parentNode elem)
-      (.removeChild elem))))
+  (identical? (style elem :display) "none"))
 
-(defn clear!
-  "clears all children from `elem`"
+(defn bounding-client-rect
+  "Returns a map of the bounding client rect of `elem`
+   as a map with [:top :left :right :bottom :width :height]"
   [elem]
-  (set! (.-innerHTML (template/->node-like elem)) ""))
+  (let [r (.getBoundingClientRect elem)]
+    {:top (.-top r)
+     :bottom (.-bottom r)
+     :left (.-left r)
+     :right (.-right r)
+     :width (.-width r)
+     :height (.-height r)}))
 
-(defn selector [data]
-  (cond
-   (coll? data) (clojure.string/join " " (map selector data))
-   (or (string? data) (keyword? data)) (name data)))
+(defn parent [elem]
+  (.-parentNode elem))
 
-(defn selector-map [template key-selectors-map]
-  (let [container (dommy.template/->node-like template)]
-    (assert (not (contains? key-selectors-map :container)))
-    (->>  key-selectors-map
-          (map (fn [[k v]]
-                 [k
-                  (if (:live (meta v))
-                    (reify
-                      IDeref
-                      (-deref [this] (sel container v)))
-                    (sel1 container v))]))
-          (into {})
-          (merge {:container container}))))
+(defn children [elem]
+  (.-children elem))
 
-(defn ancestor-nodes
-  "a lazy seq of the ancestors of `node`"
+(defn ancestors
+  "Lazy seq of the ancestors of `elem`"
   [elem]
-  (->> (template/->node-like elem)
-       (iterate #(.-parentNode %))
-       (take-while identity)))
+  (take-while identity (iterate parent elem)))
+
+(def ^{:deprecated "1.0.0"} ancestor-nodes ancestors)
 
 (defn matches-pred
-  "returns a predicate on nodes that match `selector` at the
+  "Returns a predicate on nodes that match `selector` at the
    time of this `matches-pred` call (may return outdated results
    if you fuck with the DOM)"
   ([base selector]
-     (let [matches (sel (template/->node-like base) selector)]
+     (let [matches (sel base selector)]
        (fn [elem]
          (-> matches (.indexOf elem) (>= 0)))))
   ([selector]
      (matches-pred js/document selector)))
 
 (defn closest
-  "closest ancestor of `node` (up to `base`, if provided)
+  "Closest ancestor of `elem` (up to `base`, if provided)
    that matches `selector`"
   ([base elem selector]
-     (let [base (template/->node-like base)
-           elem (template/->node-like elem)]
-       (->> (ancestor-nodes elem)
-            (take-while #(not (identical? % base)))
-            (filter (matches-pred base selector))
-            first)))
+     (->> (ancestors elem)
+          (take-while #(not (identical? % base)))
+          (filter (matches-pred base selector))
+          first))
   ([elem selector]
-     (first (filter (matches-pred selector) (ancestor-nodes (template/->node-like elem))))))
+     (closest js/document.body elem selector)))
 
 (defn ^boolean descendant?
-  "is `descendant` a descendant of `ancestor`?"
+  "Is `descendant` a descendant of `ancestor`?
+   (http://goo.gl/T8pgCX)"
   [descendant ancestor]
-  ;; http://www.quirksmode.org/blog/archives/2006/01/contains_for_mo.html
-  (let [descendant (template/->node-like descendant)
-        ancestor (template/->node-like ancestor)]
-    (cond (.-contains ancestor)
-          (.contains ancestor descendant)
-          (.-compareDocumentPosition ancestor)
-          (-> (.compareDocumentPosition ancestor descendant)
-              (bit-test 4)))))
+  (cond (.-contains ancestor)
+        (.contains ancestor descendant)
+
+        (.-compareDocumentPosition ancestor)
+        (-> (.compareDocumentPosition ancestor descendant)
+            (bit-test 4))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Element modification
+
+(defn set-text!
+  "Set the textContent of `elem` to `text`, fall back to innerText"
+  [elem text]
+  (if-not (undefined? (.-textContent elem))
+    (set! (.-textContent elem) text)
+    (set! (.-innerText elem) text))
+  elem)
+
+(defn set-html!
+  "Set the innerHTML of `elem` to `html`"
+  [elem html]
+  (set! (.-innerHTML elem) html)
+  elem)
+
+(defn set-value!
+  "Set the value of `elem` to `value`"
+  [elem value]
+  (set! (.-value elem) value)
+  elem)
+
+(defn set-class!
+  "Set the css class of `elem` to `elem`"
+  [elem c]
+  (set! (.-className elem) c))
+
+(defn set-style!
+  "Set the style of `elem` using key-value pairs:
+
+      (set-style! elem :display \"block\" :color \"red\")"
+  [elem & kvs]
+  (assert (even? (count kvs)))
+  (let [style (.-style elem)]
+    (doseq [[k v] (partition 2 kvs)]
+      (.setProperty style (as-str k) v))
+    elem))
+
+(defn set-px! [elem & kvs]
+  "Set the style of `elem`, converting numeric
+   pixel values string pixel values:
+
+       (set-px! elem :top 1337 :left 42)"
+  (assert (even? (count kvs)))
+  (doseq [[k v] (partition 2 kvs)]
+    (set-style! elem k (str v "px")))
+  elem)
+
+(defn set-attr!
+  "Sets dom attributes on and returns `elem`.
+   Attributes without values will be set to \"true\":
+
+       (set-attr! elem :disabled)
+
+   With values, the function takes variadic kv pairs:
+
+       (set-attr! elem :id \"some-id\"
+                       :name \"some-name\")"
+  ([elem k] (set-attr! elem k "true"))
+  ([elem k v]
+     (let [k (as-str k)]
+       (when v
+         (if (fn? v)
+           (doto elem (aset k v))
+           (doto elem (.setAttribute k v))))))
+  ([elem k v & kvs]
+     (assert (even? (count kvs)))
+     (doseq [[k v] (->> kvs (partition 2) (cons [k v]))]
+       (set-attr! elem k v))
+     elem))
+
+(defn remove-attr!
+  "Removes dom attributes on and returns `elem`.
+   `class` and `classes` are special cases which clear
+   out the class name on removal."
+  ([elem k]
+     (let [k (as-str k)]
+       (if (#{"class" "classes"} k)
+         (set-class! elem "")
+         (.removeAttribute elem k)))
+     elem)
+  ([elem k & ks]
+     (doseq [k (cons k ks)]
+       (remove-attr! elem k))
+     elem))
+
+(defn toggle-attr!
+  "Toggles a dom attribute `k` on `elem`, optionally specifying
+   the boolean value with `add?`"
+  ([elem k]
+     (toggle-attr! elem k (boolean (attr elem k))))
+  ([elem k ^boolean add?]
+     (if add?
+       (set-attr! elem k)
+       (remove-attr! elem k))))
+
+(defn add-class!
+  "Add `classes` to `elem`, trying to use Element::classList, and
+   falling back to fast string parsing/manipulation"
+  ([elem classes]
+     (let [classes (-> classes as-str str/trim (.split #"\s+"))]
+       (when (seq classes)
+         (if-let [class-list (.-classList elem)]
+           (doseq [c classes] (.add class-list c))
+           (doseq [c classes]
+             (let [class-name (class elem)]
+               (when-not (utils/class-index class-name c)
+                 (set-class! elem (if (identical? class-name "")
+                                    c (str class-name " " c))))))))
+       elem))
+  ([elem classes & more-classes]
+     (doseq [c (conj more-classes classes)]
+       (add-class! elem c))
+     elem))
+
+(defn remove-class!
+  "Remove `c` from `elem` class list"
+  ([elem c]
+     (let [c (as-str c)]
+       (if-let [class-list (.-classList elem)]
+         (.remove class-list c)
+         (let [class-name (class elem)
+               new-class-name (utils/remove-class-str class-name c)]
+           (when-not (identical? class-name new-class-name)
+             (set-class! elem new-class-name))))
+       elem))
+  ([elem class & classes]
+     (doseq [c (conj classes class)]
+       (remove-class! elem c))))
+
+(defn toggle-class!
+  "(toggle-class! elem class) will add-class! if elem does not have class
+   and remove-class! otherwise.
+   (toggle-class! elem class add?) will add-class! if add? is truthy,
+   otherwise it will remove-class!"
+  ([elem c]
+     (let [c (as-str c)]
+       (if-let [class-list (.-classList elem)]
+         (.toggle class-list c)
+         (toggle-class! elem c (not (has-class? elem c))))
+       elem))
+  ([elem class ^boolean add?]
+     (if add?
+       (add-class! elem class)
+       (remove-class! elem class))
+     elem))
+
+(defn toggle!
+  "Display or hide the given `elem` (using display: none).
+   Takes an optional boolean `show?`"
+  ([elem ^boolean show?]
+     (set-style! elem :display (if show? "" "none")))
+  ([elem] (toggle! elem (hidden? elem))))
+
+(defn hide! [elem]
+  (toggle! elem false))
+
+(defn show! [elem] (toggle! elem true))
+
+(defn scroll-into-view
+  [elem ^boolean align-with-top?]
+  (let [top (:top (bounding-client-rect elem))]
+    (when (< js/window.innerHeight
+             (+ top (.-offsetHeight elem)))
+      (.scrollIntoView elem align-with-top?))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; DOM Creation
+
+(defn create-element
+  ([tag]
+     (.createElement js/document (as-str tag)))
+  ([tag-ns tag]
+     (.createElementNS
+      js/document (as-str tag-ns) (as-str tag))))
+
+(defn create-text-node
+  [text]
+  (.createTextNode js/document text))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; DOM Manipulation
+
+(defn clear!
+  "Clears all children from `elem`"
+  [elem]
+  (set-html! elem ""))
+
+(defn append!
+  "Append `child` to `parent`"
+  ([parent child]
+     (doto parent
+       (.appendChild child)))
+
+  ([parent child & more-children]
+     (doseq [c (cons child more-children)]
+       (append! parent c))
+     parent))
+
+(defn prepend!
+  "Prepend `child` to `parent`"
+  ([parent child]
+     (doto parent
+       (.insertBefore child (.-firstChild parent))))
+
+  ([parent child & more-children]
+     (doseq [c (cons child more-children)]
+       (prepend! parent c))
+     parent))
+
+(defn insert-before!
+  "Insert `elem` before `other`, `other` must have a parent"
+  [elem other]
+  (let [p (parent other)]
+    (assert p "Target element must have a parent")
+    (.insertBefore p elem other)
+    elem))
+
+(defn insert-after!
+  "Insert `elem` after `other`, `other` must have a parent"
+  [elem other]
+  (if-let [next (.-nextSibling other)]
+    (insert-before! elem next)
+    (append! (parent other) elem))
+  elem)
+
+(defn replace!
+  "Replace `elem` with `new`, return `new`"
+  [elem new]
+  (let [p (parent elem)]
+    (assert p "Target element must have a parent")
+    (.replaceChild p new elem)
+    new))
+
+(defn replace-contents!
+  "Replace children of `elem` with `child`"
+  [p child]
+  (append! (clear! p) child))
+
+(defn remove!
+  "Remove `elem` from `parent`, return `parent`"
+  ([elem]
+     (let [p (parent elem)]
+       (assert p "Target element must have a parent")
+       (remove! p elem)))
+
+  ([p elem]
+     (doto p (.removeChild elem))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Events
 
 (def special-listener-makers
   (->> {:mouseenter :mouseover
@@ -227,27 +394,27 @@
   "fires f if event.target is found with `selector`"
   [elem selector f]
   (fn [event]
-    (let [selected-target (closest (template/->node-like elem) (.-target event) selector)]
+    (let [selected-target (closest elem (.-target event) selector)]
       (when (and selected-target (not (attr selected-target :disabled)))
         (set! (.-selectedTarget event) selected-target)
         (f event)))))
 
 (defn- event-listeners
-  "Returns a nested map of event listeners on `nodes`"
+  "Returns a nested map of event listeners on `elem`"
   [elem]
-  (or (.-dommyEventListeners (template/->node-like elem)) {}))
+  (or (.-dommyEventListeners elem) {}))
 
 (defn- update-event-listeners!
   [elem f & args]
-  (let [elem (template/->node-like elem)]
+  (let [elem elem]
     (set! (.-dommyEventListeners elem)
           (apply f (event-listeners elem) args))))
 
 (defn- elem-and-selector
   [elem-sel]
   (if (sequential? elem-sel)
-    ((juxt #(template/->node-like (first %)) rest) elem-sel)
-    [(template/->node-like elem-sel) nil]))
+    ((juxt first rest) elem-sel)
+    [elem-sel nil]))
 
 (defn listen!
   "Adds `f` as a listener for events of type `event-type` on
@@ -318,6 +485,7 @@
   elem-sel)
 
 (defn listen-once!
+  "Behaves like `listen!`, but removes the listener after the first event occurs."
   [elem-sel & type-fs]
   (assert (even? (count type-fs)))
   (let [[elem selector] (elem-and-selector elem-sel)]
@@ -328,21 +496,3 @@
          (unlisten! elem-sel type this-fn)
          (f e)))))
   elem-sel)
-
-(defn fire!
-  "NOTE: ONLY TO BE USED FOR TESTS. May not work at mocking many
-   event types or their bubbling behaviours
-
-   Creates an event of type `event-type`, optionally having
-   `update-event!` mutate and return an updated event object,
-   and fires it on `node`.
-   Only works when `node` is in the DOM"
-  [node event-type & [update-event!]]
-  (assert (descendant? node js/document.documentElement))
-  (let [update-event! (or update-event! identity)]
-    (if (.-createEvent js/document)
-      (let [event (.createEvent js/document "Event")]
-        (.initEvent event (name event-type) true true)
-        (.dispatchEvent node (update-event! event)))
-      (.fireEvent node (str "on" (name event-type))
-                  (update-event! (.createEventObject js/document))))))
