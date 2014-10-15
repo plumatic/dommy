@@ -188,6 +188,18 @@
      fake-event)
     (is (= 2 @click-cnt))))
 
+(deftest window-listen!
+  (let [click-cnt (atom 0)
+        handler #(swap! click-cnt inc)]
+    (is (= (dommy/listen! js/window :click handler)
+           js/window))
+    (is (= 0 @click-cnt))
+    (fire! js/window :click)
+    (is (= 1 @click-cnt))
+    (dommy/unlisten! js/window :click handler)
+    (fire! js/window :click)
+    (is (= 1 @click-cnt))))
+
 (deftest listen!
   (let [el (ce :div)
         click-cnt (atom 0)]
