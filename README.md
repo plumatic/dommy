@@ -51,7 +51,7 @@ Sometimes its useful to specify the base node from which the selection takes pla
 Inspired by [jQuery](http://jquery.com), but adapted to be functional in order to better fit with ClojureScript core.
 
 ```clojure
-(dommy/append! (sel1 :#todos) [:.todo "Eat some cake"])
+(dommy/append! (sel1 :#todos) todo-element)
 
 (doseq [todo (sel :.todo)]
   (dommy/add-class! todo :complete))
