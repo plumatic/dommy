@@ -1,3 +1,8 @@
+## 1.1.0
+
+* dommy.core/create-element now accepts optional map of attributes
+* BREAKING: dommy.core/create-element no longer creates element with XML namespace. Use dommy.core/create-element-ns
+
 ## 1.0.0
 
 * Updated ClojureScript dependency to 0.0-2356
