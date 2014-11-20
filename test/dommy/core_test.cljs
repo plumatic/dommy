@@ -326,6 +326,31 @@
     (is (= left 100))
     (is (= top 200))))
 
+(deftest create-element
+  (doseq [tag-name ["div" "span" "a"]
+          :let [el (dommy/create-element tag-name)]]
+    (is (= (.toUpperCase tag-name) (.-tagName el))))
+  (testing "setting attributes"
+    (let [attrs {:class "foo"
+                 :id "the-foo"
+                 :style "color:red;"
+                 :data-attribute "bar"}
+          el (dommy/create-element "div" attrs)]
+      (doseq [[attr-name attr-val] attrs]
+        (is (= attr-val (dommy/attr el attr-name)))
+        (is (= attr-val (dommy/attr el (name attr-name))))))))
+
+(deftest create-element-ns
+  (let [el (dommy/create-element-ns "http://www.w3.org/1999/xhtml" "page")]
+    (is (= "PAGE" (.-tagName el)))
+    (is (= "http://www.w3.org/1999/xhtml" (.-namespaceURI el))))
+  (testing "setting attributes"
+    (let [attrs {:title "Working with Elements"}
+          el (dommy/create-element-ns "http://www.w3.org/1999/xhtml" "page" attrs)]
+      (doseq [[attr-name attr-val] attrs]
+        (is (= attr-val (dommy/attr el attr-name)))
+        (is (= attr-val (dommy/attr el (name attr-name))))))))
+
 (deftest ->Array
   (let [array (utils/->Array (js* "{length: 2, 0: 'lol', 1: 'wut'}"))]
     (is (instance? js/Array array))

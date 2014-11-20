@@ -292,11 +292,26 @@
 ;;; DOM Creation
 
 (defn create-element
-  ([tag]
-     (.createElement js/document (as-str tag)))
-  ([tag-ns tag]
-     (.createElementNS
-      js/document (as-str tag-ns) (as-str tag))))
+  "Creates an element for specified tag name.
+   Optionally accepts map of attributes to set on element"
+  ([tag-name]
+     (create-element tag-name nil))
+  ([tag-name attrs]
+     (let [el (.createElement js/document (as-str tag-name))]
+       (doseq [[k v] attrs]
+         (set-attr! el k v))
+       el)))
+
+(defn create-element-ns
+  "Creates an element with specified namespace URI and qualified name.
+   Optionally accepts map of attributes to set on element"
+  ([tag-ns tag-name]
+     (create-element-ns tag-ns tag-name nil))
+  ([tag-ns tag-name attrs]
+     (let [el (.createElementNS js/document (as-str tag-ns) (as-str tag-name))]
+       (doseq [[k v] attrs]
+         (set-attr! el k v))
+       el)))
 
 (defn create-text-node
   [text]
