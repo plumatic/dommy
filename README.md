@@ -24,6 +24,8 @@ changed:
 See CHANGELOG.md or <https://github.com/Prismatic/dommy/pull/85> for more
 details.
 
+If you are looking for hiccup-style templating features, check out https://github.com/jeluard/hipo/
+
 ### Selection
 
 DOM nodes are selected using macros, which expand to the correct native dom calls. Because selectors don't wrap returned nodes, there is a distinction between single and multiple selections. A selector can be a keyword, string or vector.
