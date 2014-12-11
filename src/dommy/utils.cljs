@@ -36,7 +36,7 @@
        (or (identical? stop total-len)
            (identical? \space (.charAt class-name stop)))))))
 
-(defn class-index
+(defn ^number class-index
   "Finds the index of class in a space-delimited class-name
     only will be used when Element::classList doesn't exist"
   [class-name class]
@@ -53,6 +53,7 @@
       (if-let [i (class-index class-name class)]
         (recur (let [end (+ i (.-length class))]
                  (str (if (< end class-len)
-                        (str (.substring class-name 0 i) (.substr class-name (inc end)))
+                        (str (.substring class-name 0 i)
+                             (.substr class-name (inc end)))
                         (.substring class-name 0 (dec i))))))
         class-name))))
