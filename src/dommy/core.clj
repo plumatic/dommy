@@ -31,7 +31,7 @@
 (defmacro sel1
   "Select a single DOM node. Tries to expand to the native selector methods
    as defined by `by-id`, `by-class`, and `by-tag`, falling back to
-   `document.querySelectorAll` when the selector isn't a constant."
+   `document.querySelector` when the selector isn't a constant."
   ([data] `(sel1 js/document ~data))
   ([base data]
      (if (utils/constant? data)
@@ -46,8 +46,8 @@
 
 (defmacro sel
   "Same behavior as `sel1`, instead keeping the full array that `by-class`
-   or `by-tag` expand to. Falls back to `document.querySelector` instead of
-   `document.querySelectorAll`."
+   or `by-tag` expand to. Falls back to `document.querySelectorAll` instead of
+   `document.querySelector`."
   ([data] `(sel js/document ~data))
   ([base data]
      (if (utils/constant? data)
