@@ -160,6 +160,16 @@
       (.setProperty style (as-str k) v))
     elem))
 
+(defn remove-style!
+  "Remove the style of `elem` using keywords:
+  
+      (remove-style! elem :display :color)"
+  [elem & keywords]
+  (let [style (.-style elem)]
+    (doseq [kw keywords]
+      (.removeProperty style (as-str kw)))
+    elem))
+
 (defn set-px! [elem & kvs]
   "Set the style of `elem`, converting numeric
    pixel values string pixel values:
