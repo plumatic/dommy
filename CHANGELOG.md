@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Added `dommy.core/remove-style!`
+
 ## 1.0.0
 
 * Updated ClojureScript dependency to 0.0-2356
