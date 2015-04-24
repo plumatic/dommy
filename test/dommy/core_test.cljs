@@ -300,7 +300,10 @@
     (dommy/prepend! js/document.body el)
     (dommy/set-style! el :height "0px" :orphans 666)
     (is (= (dommy/style el :height) "0px"))
-    (is (= (dommy/style el :orphans) "666"))))
+    (is (= (dommy/style el :orphans) "666"))
+    (dommy/remove-style! el :height :orphans)
+    (is (empty? (-> el .-style .-height)))
+    (is (empty? (-> el .-style .-orphans)))))
 
 (deftest set-px!
   (let [el (ce :div)]
