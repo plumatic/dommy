@@ -7,7 +7,7 @@ A ClojureScript DOM manipulation and event library.
 Add the following dependency to your `project.clj`:
 
 ```clojure
-[prismatic/dommy "1.0.0"]
+[prismatic/dommy "1.1.0"]
 ```
 
 #### Upgrading to 1.0.0+ from 0.X.Y
