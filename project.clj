@@ -34,4 +34,4 @@
   :lein-release {:deploy-via :shell
                  :shell ["lein" "deploy" "clojars"]}
 
-  :cljsbuild {:builds []})
+  :cljsbuild {:builds {}})
