@@ -19,18 +19,19 @@
   :hooks [leiningen.cljsbuild]
 
   :profiles {:dev {:dependencies [[com.cemerick/clojurescript.test "0.3.1"]]
-                   :plugins [[com.cemerick/clojurescript.test "0.3.1"]]}}
+                   :plugins [[com.cemerick/clojurescript.test "0.3.1"]]
+                   :cljsbuild
+                   {:builds
+                    {:test {:source-paths ["src" "test"]
+                            :incremental? true
+                            :compiler {:output-to "target/unit-test.js"
+                                       :optimizations :whitespace
+                                       :pretty-print true}}}
+                    :test-commands {"unit" ["phantomjs" :runner
+                                            "window.literal_js_was_evaluated=true"
+                                            "target/unit-test.js"]}}}}
 
   :lein-release {:deploy-via :shell
                  :shell ["lein" "deploy" "clojars"]}
 
-  :cljsbuild
-  {:builds
-   {:test {:source-paths ["src" "test"]
-           :incremental? true
-           :compiler {:output-to "target/unit-test.js"
-                      :optimizations :whitespace
-                      :pretty-print true}}}
-   :test-commands {"unit" ["phantomjs" :runner
-                           "window.literal_js_was_evaluated=true"
-                           "target/unit-test.js"]}})
+  :cljsbuild {:builds []})
