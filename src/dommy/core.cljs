@@ -182,7 +182,7 @@
 
 (defn set-attr!
   "Sets dom attributes on and returns `elem`.
-   Attributes without values will be set to \"true\":
+   Attributes without values will be set to their name:
 
        (set-attr! elem :disabled)
 
@@ -190,7 +190,7 @@
 
        (set-attr! elem :id \"some-id\"
                        :name \"some-name\")"
-  ([elem k] (set-attr! elem k "true"))
+  ([elem k] (set-attr! elem k (as-str k)))
   ([elem k v]
      (let [k (as-str k)]
        (when v

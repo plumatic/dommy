@@ -335,3 +335,8 @@
     (is (= (.-length array) 2))
     (is (= (aget array 0) "lol"))
     (is (= (aget array 1) "wut"))))
+
+(deftest set-attr!
+  (let [el (ce :input)]
+    (dommy/set-attr! el :disabled)
+    (is (= (dommy/attr el :disabled) "disabled"))))
