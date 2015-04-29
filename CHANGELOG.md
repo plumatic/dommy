@@ -1,6 +1,7 @@
 ## 1.1.0
 
 * Added `dommy.core/remove-style!`
+* Update `dommy.core/set-attr!` to set more appropriate value for boolean attributes
 
 ## 1.0.0
 
