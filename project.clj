@@ -1,16 +1,9 @@
 (defproject prismatic/dommy "1.1.1-SNAPSHOT"
   :clojurescript? true
   :description "Clojurescript DOM manipulation"
-  :url "https://github.com/prismatic/dommy"
+  :url "https://github.com/plumatic/dommy"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :scm {:url "git@github.com:prismatic/dommy.git"}
-  :pom-addition [:developers [:developer
-                              [:name "Prismatic"]
-                              [:url "http://getprismatic.com"]
-                              [:email "admin+oss@getprismatic.com"]
-                              [:timezone "-8"]]]
-
   :dependencies [[org.clojure/clojure "1.6.0" :scope "provided"]
                  [org.clojure/clojurescript "0.0-2356" :scope "provided"]]
 

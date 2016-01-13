@@ -21,7 +21,7 @@ changed:
     Everything in `dommy.macros` and `dommy.attrs` has been moved into
     `dommy.core`
 
-See CHANGELOG.md or <https://github.com/Prismatic/dommy/pull/85> for more
+See CHANGELOG.md or <https://github.com/plumatic/dommy/pull/85> for more
 details.
 
 If you are looking for hiccup-style templating features, check out https://github.com/jeluard/hipo/
